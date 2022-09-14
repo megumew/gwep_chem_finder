@@ -1,3 +1,5 @@
+use dm_reader;
+
 static BASES: [Base; 30] = [
     Base { id: "aluminium" },
     Base { id: "barium" },
@@ -31,6 +33,11 @@ static BASES: [Base; 30] = [
     Base { id: "water" },
 ];
 
+struct Reagent {
+    name: Chemical,
+    quantity: u32,
+}
+
 enum Chemical {
     Base(Base),
     Compound(Compound),
@@ -42,17 +49,18 @@ struct Base {
 }
 
 struct Compound {
-    name: String,
     internal_name: String,
+    name: String,
     id: String,
     result: String,
     def_start: usize,
     def_end: usize,
-    required_reagents: Vec<Chemical>,
+    required_reagents: Vec<Reagent>,
     result_amount: u8,
 }
 
 fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available bases: {:?}", BASES);
+    let result = dm_reader::dm_reader::read_file(String::from("recipes.DM"));
 }

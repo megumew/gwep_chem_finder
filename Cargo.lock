@@ -3,5 +3,12 @@
 version = 3
 
 [[package]]
-name = "gwep_chem_finder"
+name = "core"
+version = "0.1.0"
+dependencies = [
+ "dm_reader",
+]
+
+[[package]]
+name = "dm_reader"
 version = "0.1.0"
