@@ -1,5 +1,3 @@
-use std::{error::Error, slice::SliceIndex};
-
 use crate::{dm_error::*, token::*, token_type::*};
 
 pub struct Scanner {

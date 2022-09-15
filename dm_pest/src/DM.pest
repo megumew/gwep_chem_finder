@@ -1,0 +1,53 @@
+newline    = _{ "\n" | "\r\n" }
+block_comment = _{ "/*" ~ (block_comment | !"*/" ~ ANY)* ~ "*/" }
+COMMENT    = _{ block_comment | ("//" ~ (!newline ~ ANY)*) }
+WHITESPACE = _{ " " | "\n" }
+
+definition = _{ "#ifdef" ~ (block_comment | !"#endif" ~ ANY)* ~ "#endif" }
+
+identifier = {ASCII_ALPHA ~ ((!(newline | WHITESPACE)) ~ ASCII_ALPHA | ASCII_DIGIT | "_")*}
+
+datum = {"datum" ~ def_obj}
+
+def_obj = {"\t" ~ identifier ~ (def_field | field_comment | definition)+ }
+
+field_comment = _{"\t\t"}
+
+def_field = {"\t\t" ~ (var_list | var) ~ "=" ~ ((new ~ list | list) | (data))}
+
+var = {"var/" ~ identifier}
+
+var_list = {"var/list/" ~ identifier}
+
+new = {"new/"}
+
+list = {"list()"}
+
+obj = {"\t" ~ identifier ~ (field)+ }
+
+field = {"\t\t" ~ identifier ~ "=" ~ data}
+
+data = {null | num_val| temp_val | file_path | string}
+
+null = {"null"}
+
+num_val = { infinity | int }
+
+int = {("-")? ~ number}
+
+number = { ASCII_DIGIT ~ (ASCII_DIGIT)*}
+
+infinity = {("-")? ~ "INFINITY"}
+
+string = ${ quote ~ inner_str ~ quote }
+
+temp_val = {"T" ~ number ~ "C" ~ ("+" ~ number) ?}
+
+file_path = {"'" ~ inner_str ~ "'"}
+
+quote = { "\"" }
+inner_str = @{ (!("\"" | "\\") ~ ANY)* ~ (escape ~ inner_str)? }
+escape    = @{ "\\" ~ ("\"" | "\\" | "r" | "n" | "t" | "0" | "'" ) }
+
+file = {SOI ~ (datum)* ~ (obj | definition)* ~ EOI}
+

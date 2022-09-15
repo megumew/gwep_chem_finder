@@ -1,4 +1,8 @@
-use dm_reader;
+use dm_pest::parser;
+// use dm_reader;
+extern crate pest;
+#[macro_use]
+extern crate pest_derive;
 
 static BASES: [Base; 30] = [
     Base { id: "aluminium" },
@@ -62,5 +66,6 @@ struct Compound {
 fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available bases: {:?}", BASES);
-    let result = dm_reader::dm_reader::read_file(String::from("recipes.DM"));
+    // let result = dm_reader::dm_reader::read_file(String::from("recipes.DM"));
+    parser::read_file(String::from("recipes.DM"));
 }

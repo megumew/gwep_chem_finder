@@ -2,6 +2,6 @@
 
 members = [
     "core",
-    "dm_reader",
-
+    # "dm_reader",
+    "dm_pest"
 ]

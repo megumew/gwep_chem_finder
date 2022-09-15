@@ -1,12 +1,10 @@
 [package]
-name = "core"
+name = "dm_pest"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# dm_reader = {path = "../dm_reader"}
-dm_pest = {path = "../dm_pest"}
 pest = "2.3.0"
 pest_derive = "2.3.0"
