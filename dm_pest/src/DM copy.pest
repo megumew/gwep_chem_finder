@@ -2,7 +2,7 @@ newline    = _{ "\n" | "\r\n" }
 multi_line = _{"\\\n\t\t\t"}
 block_comment = _{ "/*" ~ (block_comment | !"*/" ~ ANY)* ~ "*/" }
 COMMENT    = _{ ((" " | "\t")* ~ (block_comment |  ("//" ~ (!newline ~ ANY)*) ~ newline))}
-WHITESPACE = _{ newline | multi_line | " "}
+WHITESPACE = _{ newline | multi_line }
 
 
 definition = {"\t"* ~ "#ifdef" ~ (block_comment | !"#endif" ~ ANY)* ~ "#endif" }
@@ -12,25 +12,18 @@ identifier = {ASCII_ALPHA ~ (!(newline) ~ ASCII_ALPHA | ASCII_DIGIT | "_" | "/")
 datum = {"datum" ~ def_obj}
 def_obj = {"\t" ~ identifier ~ (def_proc | def_field | definition)+ }
 
-def_field = {indent_2 ~ (var_list | var) ~ assign ~ ((new ~ empty_list | empty_list) | (data))}
+def_field = {"\t\t" ~ (var_list | var) ~ assign ~ ((new ~ empty_list | empty_list) | (data))}
 
-def_proc = {indent_2 ~ "proc/" ~ identifier ~ param ~ def_proc_ret}
-def_proc_ret = ${ indent_3 ~ "return" ~ (" " ~ number)?}
-
+def_proc = {"\t\t" ~ "proc/" ~ identifier ~ param ~ def_proc_ret}
 //TODO! Add multiline
 param = {"(" ~ (param_val) ~ (", " ~ param_val)* ~ ")" }
 param_val = {identifier}
+def_proc_ret = { "\t\t\t" ~ "return" ~ (" " ~ number)?}
 
 //Currently ignore proc blocks
-proc_m = ${ indent_3 ~ identifier ~ param ~ (!(proc_ret | proc_break) ~ any_line)* ~ (proc_ret | proc_break)}
-proc_ret = ${ indent_4 ~ "return" ~ (" "* ~ (number | ((!newline ~ ANY)*) ~ newline))?}
+proc_m = {"\t\t\t" ~ identifier ~ param ~ (!proc_ret ~ any_line)* ~ proc_ret}
+proc_ret = ${ "\t\t\t\t" ~ "return" ~ (" "* ~ (number | ((!newline ~ ANY)*) ~ newline))?}
 any_line = ${(!newline ~ ANY)* ~ newline}
-proc_break = ${newline ~ !(indent_4 | indent_5)}
-
-indent_2 = _{"\t" ~ "\t"}
-indent_3 = _{"\t" ~ "\t" ~ "\t"}
-indent_4 = _{"\t" ~ "\t" ~ "\t" ~ "\t"}
-indent_5 = _{"\t" ~ "\t" ~ "\t" ~ "\t" ~ "\t"}
 
 var = {"var/" ~ identifier}
 
@@ -39,25 +32,23 @@ var_list = {"var/list/" ~ identifier}
 new = {"new/"}
 empty_list = {"list()"}
 
-list = {"list" ~ "(" ~ element ~ ("," ~ element)* ~ ")" }
+list = {"list(" ~ element ~ (" "* ~ "," ~ " "* ~ element)* ~ " "* ~ ")" }
 element = { quantity | concrete}
-quantity = {string ~ assign ~ number}
+quantity = ${string ~ assign ~ number}
 concrete = {string}
 
-obj = {indent_2 ~ identifier ~ (field | definition)+ }
+obj = {"\t\t" ~ identifier ~ (field | definition)+ }
 
-field = {indent_3 ~ identifier ~ assign ~ (list | data)}
+field = {"\t\t\t" ~ identifier ~ assign ~ (list | data)}
 
 data = {null | bool | num_val | temp_val | file_path | string}
 
 null = {"null"}
-assign = {"="}
+assign = {" " ? ~ "=" ~ " "? }
 
-num_val = ${ infinity | float | int}
+num_val = { infinity | int }
 
-float = ${ int+ ~ "." ~ int+ }
-
-int = ${("-")? ~ number}
+int = {("-")? ~ number}
 
 number = ${ ASCII_DIGIT ~ (ASCII_DIGIT)*}
 
@@ -69,13 +60,13 @@ bool = {true_val | false_val }
 true_val = {"TRUE"}
 false_val = {"FALSE"}
 
-temp_val = {"T" ~ number ~ "C" ~ ("+" ~ number) ?}
+temp_val = {"T" ~ number ~ "C" ~ (" + " ~ number) ?}
 
 file_path = {tick ~ (!tick ~ inner_path)* ~ tick}
 tick = {"\'"}
 inner_path = { !tick ~ ANY ~ (!tick ~ ANY)* }
 
-quote = _{ "\"" }
+quote = { "\"" }
 inner_str = @{ (!("\"" | "\\") ~ ANY)* ~ (escape ~ inner_str)? }
 escape    = @{ "\\" ~ ("\"" | "\\" | "r" | "n" | "t" | "0" | "'" ) }
 
