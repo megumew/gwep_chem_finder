@@ -1,22 +1,27 @@
 newline    = _{ "\n" | "\r\n" }
 block_comment = _{ "/*" ~ (block_comment | !"*/" ~ ANY)* ~ "*/" }
-COMMENT    = _{ block_comment | ("//" ~ (!newline ~ ANY)*) }
+COMMENT    = _{ block_comment | ("//" ~ (!newline ~ ANY)*) | field_comment }
 WHITESPACE = _{ "\n" | " " }
 
 definition = _{ "#ifdef" ~ (block_comment | !"#endif" ~ ANY)* ~ "#endif" }
 
 identifier = {ASCII_ALPHA ~ (!(newline) ~ ASCII_ALPHA | ASCII_DIGIT | "_" | "/")*}
+
 datum = {"datum" ~ def_obj}
 def_obj = {"\t" ~ identifier ~ (def_proc | def_field | field_comment | definition)+ }
-field_comment = _{"\t\t"}
+field_comment = _{"\t\t" ~ COMMENT}
 
 def_field = {"\t\t" ~ (var_list | var) ~ assign ~ ((new ~ empty_list | empty_list) | (data))}
 
-def_proc = {"\t\t" ~ "proc/" ~ identifier ~ param ~ proc_ret}
+def_proc = {"\t\t" ~ "proc/" ~ identifier ~ param ~ def_proc_ret}
 param = {"(" ~ (param_val) ~ ("," ~ param_val)* ~ ")" }
 param_val = {identifier}
+def_proc_ret = { "\t\t\t" ~ "return" ~ (number)?}
 
-proc_ret = { "\t\t\t" ~ "return" ~ (number)?}
+//Currently ignore proc blocks
+proc_m = {"\t\t\t" ~ identifier ~ param ~ (!proc_ret ~ any_line)* ~ proc_ret}
+proc_ret = { "\t\t\t\t" ~ "return" ~ (number)?}
+any_line = ${(!newline ~ ANY)* ~ newline}
 
 var = {"var/" ~ identifier}
 
@@ -25,7 +30,7 @@ var_list = {"var/list/" ~ identifier}
 new = {"new/"}
 empty_list = {"list()"}
 
-list = {"list(" ~ (!"," ~ element)+ ~ ("," | ")") }
+list = {"list(" ~ element ~ ("," ~ element)* ~ ")" }
 element = { quantity | concrete}
 quantity = {string ~ assign ~ number}
 concrete = {string}
@@ -55,12 +60,13 @@ false_val = {"FALSE"}
 
 temp_val = {"T" ~ number ~ "C" ~ ("+" ~ number) ?}
 
-file_path = {tick ~ (!tick ~ ANY)* ~ tick}
+file_path = {tick ~ (!tick ~ inner_path)* ~ tick}
 tick = {"\'"}
+inner_path = { !tick ~ ANY ~ (!tick ~ ANY)* }
 
 quote = { "\"" }
 inner_str = @{ (!("\"" | "\\") ~ ANY)* ~ (escape ~ inner_str)? }
 escape    = @{ "\\" ~ ("\"" | "\\" | "r" | "n" | "t" | "0" | "'" ) }
 
-file = {SOI ~ datum ~ (obj | definition)* ~ EOI}
+file = {SOI ~ datum? ~ (obj | proc_m | definition)* ~ EOI}
 
