@@ -1,4 +1,4 @@
-use data::chemicals::Reagent;
+use data::chemicals::{Compound, Reagent};
 use pest::Parser;
 use pest_derive::Parser;
 use std::fs;
