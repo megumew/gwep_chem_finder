@@ -3,5 +3,6 @@
 members = [
     "core",
     # "dm_reader",
-    "dm_pest"
+    "dm_pest",
+    "data",
 ]

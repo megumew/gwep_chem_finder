@@ -21,6 +21,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "core"
 version = "0.1.0"
 dependencies = [
+ "data",
  "dm_pest",
  "pest",
  "pest_derive",
@@ -46,6 +47,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "data"
+version = "0.1.0"
+
+[[package]]
 name = "digest"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -59,6 +64,7 @@ dependencies = [
 name = "dm_pest"
 version = "0.1.0"
 dependencies = [
+ "data",
  "pest",
  "pest_derive",
 ]

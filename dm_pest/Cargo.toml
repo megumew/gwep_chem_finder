@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 pest = "2.3.0"
 pest_derive = "2.3.0"
+data = {path = "../data"}

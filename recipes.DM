@@ -220,6 +220,7 @@ datum
 				return
 
 /*		The smoke reaction now deletes pyrosium (thalmerite) to prevent it from spreading everywhere without blocking delayed smoke reactions - IM
+
 		no_pyrosium_smoke
 			name = "no pyrosium smoke"
 			id = "no_pyrosium_smoke"
@@ -233,6 +234,7 @@ datum
 					holder.del_reagent("phosphorus")
 					holder.del_reagent("potassium")
 				return
+
 		no_pyrosium_smoke2
 			name = "no pyrosium smoke 2"
 			id = "no_pyrosium_smoke2"
@@ -385,6 +387,7 @@ datum
 			required_reagents = list("oxygen" = 1, "flourine" = 1, "stabiliser" = 1)
 			result_amount = 1
 			mix_phrase = "The mixture violently erupts and seethes with fire."
+
 			on_reaction(var/datum/reagents/holder, var/created_volume)
 				fireflash(holder.my_atom, 3)
 				return*/
@@ -3006,6 +3009,7 @@ datum
 			result_amount = 3
 			mix_phrase = "A strange odor comes from the resultant greenish goo."
 			mix_sound = 'sound/impact_sounds/Slimy_Hit_4.ogg'
+
 		plant_nutrients_quickgrow
 			name = "Gro-Boost Plant Formula"
 			id = "plant_nutrients_grow"
@@ -3014,6 +3018,7 @@ datum
 			result_amount = 3
 			mix_phrase = "The mixture smells earthy and yet strange."
 			mix_sound = 'sound/impact_sounds/Slimy_Hit_4.ogg'
+
 		plant_nutrients_cropyield
 			name = "Top Crop Plant Formula"
 			id = "plant_nutrients_crop"
@@ -3022,6 +3027,7 @@ datum
 			result_amount = 3
 			mix_phrase = "The substance dissolves into a thick silty soup."
 			mix_sound = 'sound/impact_sounds/Slimy_Hit_4.ogg'
+
 		plant_nutrients_potency
 			name = "Powerplant Plant Formula"
 			id = "plant_nutrients_potency"
@@ -3030,6 +3036,7 @@ datum
 			result_amount = 3
 			mix_phrase = "A pungent and powerful earthy odor comes from the mixture."
 			mix_sound = 'sound/impact_sounds/Slimy_Hit_4.ogg'
+
 		plant_nutrients_balance
 			name = "Fruitful Farming Plant Formula"
 			id = "plant_nutrients_balance"
@@ -3307,6 +3314,7 @@ datum
 			result_amount = 5
 			mix_phrase = "The chemicals mix into a shade of brown and begin to bubble."
 			mix_sound = 'poo2.ogg'
+
 			on_reaction(var/datum/reagents/holder, var/created_volume)
 				holder.clear_reagents()
 				message_admins("[] attempted to make infinifoam what a piece of shit", usr) */
@@ -3492,6 +3500,7 @@ datum
 				bust_lights()
 				creepify_station()
 				return
+
 		bleach
 			name = "Bleach" // cogwerks WIP: could be useful for hobo chemistry, hair bleaching, stubborn stains, being a jerk and turning stuff white
 			id = "bleach"
@@ -3500,6 +3509,7 @@ datum
 			required_reagents = list("sodium" = 1, "chlorine" = 1, "hydrogen" = 1)
 			mix_phrase = "The mixture gives off a sharp odor much like bleach. Probably because it's bleach."
 			mix_sound = 'sound/misc/drinkfizz.ogg'
+
 		chlorine // cogwerks, more hobo chemistry
 			name = "Chlorine"
 			id = "chlorine"
@@ -3508,6 +3518,7 @@ datum
 			result_amount = 1
 			mix_phrase = "The mixture starts bubbling violently!"
 			mix_sound = 'sound/misc/fuse.ogg'
+
 			on_reaction(var/datum/reagents/holder, var/created_volume)
 				var/location = get_turf(holder.my_atom)
 				for(var/mob/M in AIviewers(5, location))
@@ -3688,6 +3699,7 @@ datum
 			required_reagents = list("omnizine" = 1, "styptic_powder" = 1, "salbutamol" = 1)
 			result_amount = 1
 			mix_phrase = "The smell of spring drifts from the solution."
+
 		montaguone_extra
 			name = "Montaguone Extra"
 			id = "montaguone_extra"
@@ -3968,6 +3980,7 @@ datum
 			required_reagents = list("lube" = 1, "iodine" = 2, "silver" = 1, "fluorine" = 1, "cryostylane" = 1) //, "perfluorodecalin" = 1, "oil" = 1, "chlorine" = 1)
 			required_temperature = - 233 // -30 degrees celsius
 			min_temperature = 200 //Will not react below 200 K
+
 			/*
 			Boron nitride: lube because boron nitride is a lubricant
 			Iodine, silver and fluorine for I_2 + AgF -> IF + AgI
