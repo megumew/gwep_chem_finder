@@ -64,11 +64,13 @@ pub static BASES: [Base; 30] = [
     Base::Water,
 ];
 
+#[derive(Debug)]
 pub struct Reagent {
     name: Chemical,
     quantity: u32,
 }
 
+#[derive(Debug)]
 pub enum Chemical {
     Base(Base),
     Compound(Compound),
@@ -150,6 +152,7 @@ pub enum Base {
 //     }
 // }
 
+#[derive(Debug)]
 pub struct Compound {
     internal_name: String,
     name: String,
@@ -157,6 +160,30 @@ pub struct Compound {
     result: String,
     mix_phrase: String,
     required_reagents: Vec<Reagent>,
-    result_amount: u8,
+    result_amount: f32,
     hidden: Option<bool>,
+}
+
+impl Compound {
+    pub fn new(
+        internal_name: String,
+        name: String,
+        id: String,
+        result: String,
+        mix_phrase: String,
+        required_reagents: Vec<Reagent>,
+        result_amount: f32,
+        hidden: Option<bool>,
+    ) -> Compound {
+        Compound {
+            internal_name,
+            name,
+            id,
+            result,
+            mix_phrase,
+            required_reagents,
+            result_amount,
+            hidden,
+        }
+    }
 }

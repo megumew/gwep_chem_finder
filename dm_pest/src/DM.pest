@@ -46,30 +46,32 @@ concrete = {string}
 
 obj = {indent_2 ~ identifier ~ (field | definition)+ }
 
-field = {indent_3 ~ identifier ~ assign ~ (list | data)}
+field = {indent_3 ~ value}
+
+value = { identifier ~ assign ~ (list | data)}
 
 data = {null | bool | num_val | temp_val | file_path | string}
 
-null = {"null"}
-assign = {"="}
+null = _{"null"}
+assign = _{"="}
 
-num_val = ${ infinity | float | int}
+num_val = @{ infinity | float | int}
 
-float = ${ int+ ~ "." ~ int+ }
+float = @{ int+ ~ "." ~ int+ }
 
-int = ${("-")? ~ number}
+int = @{("-")? ~ number}
 
-number = ${ ASCII_DIGIT ~ (ASCII_DIGIT)*}
+number = @{ ASCII_DIGIT ~ (ASCII_DIGIT)*}
 
-infinity = {("-")? ~ "INFINITY"}
+infinity = @{("-")? ~ "INFINITY"}
 
-string = ${ quote ~ inner_str ~ quote }
+string = @{ quote ~ inner_str ~ quote }
 
-bool = {true_val | false_val }
-true_val = {"TRUE"}
-false_val = {"FALSE"}
+bool = @{true_val | false_val }
+true_val = @{"TRUE"}
+false_val = @{"FALSE"}
 
-temp_val = {"T" ~ number ~ "C" ~ ("+" ~ number) ?}
+temp_val = _{"T" ~ number ~ "C" ~ ("+" ~ number) ?}
 
 file_path = {tick ~ (!tick ~ inner_path)* ~ tick}
 tick = {"\'"}
