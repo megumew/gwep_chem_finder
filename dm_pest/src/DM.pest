@@ -78,7 +78,7 @@ tick = {"\'"}
 inner_path = { !tick ~ ANY ~ (!tick ~ ANY)* }
 
 quote = _{ "\"" }
-inner_str = @{ (!("\"" | "\\") ~ ANY)* ~ (escape ~ inner_str)? }
+inner_str = ${ (!("\"" | "\\") ~ ANY)* ~ (escape ~ inner_str)? }
 escape    = @{ "\\" ~ ("\"" | "\\" | "r" | "n" | "t" | "0" | "'" ) }
 
 file = {SOI ~ datum? ~ (obj | proc_m | definition)* ~ EOI}
