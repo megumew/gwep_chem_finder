@@ -12,7 +12,7 @@ fn main() {
 
     println!("There are {} compounds.", compounds.len());
 
-    for c in compounds {
-        println!("{:?}", c)
-    }
+    // for c in compounds {
+    //     println!("{:?}", c)
+    // }
 }

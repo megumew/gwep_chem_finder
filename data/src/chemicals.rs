@@ -1,3 +1,5 @@
+use std::io::Read;
+
 // static BASES: [Base; 30] = [
 //     Base { id: "aluminium" },
 //     Base { id: "barium" },
@@ -66,8 +68,14 @@ pub static BASES: [Base; 30] = [
 
 #[derive(Debug)]
 pub struct Reagent {
-    name: Chemical,
+    name: String,
     quantity: u32,
+}
+
+impl Reagent {
+    pub fn new(name: String, quantity: u32) -> Reagent {
+        Reagent { name, quantity }
+    }
 }
 
 #[derive(Debug)]

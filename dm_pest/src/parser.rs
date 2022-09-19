@@ -129,9 +129,18 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
                         }
                         "required_reagents" => {
                             let list = value.into_inner();
-                            println!("{}", list.as_str());
                             for val in list {
-                                println!("{}", val.as_str())
+                                let mut entry = val.into_inner();
+                                let data = entry.next().unwrap();
+                                let mut data_iter = data.into_inner();
+                                let chem_data = data_iter.next().unwrap();
+                                let chem = chem_data.into_inner().next().unwrap();
+                                let num = data_iter.next().unwrap();
+
+                                required_reagents.push(Reagent::new(
+                                    String::from(chem.as_str()),
+                                    num.as_str().parse::<u32>().unwrap(),
+                                ))
                             }
                         }
                         "result_amount" => result_amount = value.as_str().parse::<f32>().unwrap(),
