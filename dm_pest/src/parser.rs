@@ -104,7 +104,18 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
                                 String::from(inner_str.as_str())
                             }
                         }
-                        "result" => result = String::from(value.as_str()),
+                        "result" => {
+                            result = String::from(value.as_str());
+                            let val = value.into_inner().next();
+                            match val {
+                                Some(val) => {
+                                    let str = val;
+                                    let inner_str = str.into_inner().next().unwrap();
+                                    result = String::from(inner_str.as_str())
+                                }
+                                None => {}
+                            }
+                        }
                         "mix_phrase" => mix_phrase = String::from(value.as_str()),
                         "required_reagents" => {
                             let list = value.into_inner();
