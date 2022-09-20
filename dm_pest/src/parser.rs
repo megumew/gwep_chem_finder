@@ -1,5 +1,5 @@
-use data::chemicals::{Compound, Reagent};
-use pest::{iterators::Pair, Parser};
+use chem::chemicals::{Compound, Reagent};
+use pest::Parser;
 use pest_derive::Parser;
 use std::fs;
 
@@ -11,11 +11,6 @@ pub struct DMParser;
 pub fn parse(path: String) -> Vec<Compound> {
     let unparsed_file = fs::read_to_string(path).expect("cannot read file");
 
-    // let pairs = DMParser::parse(Rule::file, &unparsed_file)
-    //     .expect("unsuccessful parse") // unwrap the parse result
-    //     .next()
-    //     .unwrap(); // get and unwrap the `file` rule; never fails
-
     let file = DMParser::parse(Rule::file, &unparsed_file).unwrap_or_else(|e| panic!("{}", e));
 
     let mut compound_pairs = vec![];
@@ -25,39 +20,7 @@ pub fn parse(path: String) -> Vec<Compound> {
         for inner_pair in pairs.into_inner() {
             match inner_pair.as_rule() {
                 Rule::obj => {
-                    //println!("{}", inner_pair.as_str());
                     compound_pairs.push(inner_pair);
-                    // let mut internal_name: String = String::new();
-                    // let mut name: String = String::new();
-                    // let mut id: String = String::new();
-                    // let mut result: String = String::new();
-                    // let mut mix_phrase: String = String::new();
-                    // let mut required_reagents: Vec<Reagent> = Vec::new();
-                    // let mut result_amount: u8 = 0;
-                    // let mut hidden: Option<bool> = None;
-                    // //println!("Compound:  {}", inner_pair.as_str());
-                    // for value in inner_pair.into_inner() {
-                    //     match value.as_rule() {
-                    //         Rule::identifier => internal_name = String::from(value.as_str()),
-                    //         Rule::field => {
-                    //             println!("{}", value.as_str());
-                    //             compounds.push(value);
-                    //         }
-                    //         _ => {}
-                    //     }
-                    // }
-
-                    // println!(
-                    //     "Compound: {}\nname: {}\nid: {}\nresult: {}\nmixphrase: {}\nrequired_reagents{:?}\nresult_amount: {}\nhidden: {:?}",
-                    //     internal_name,
-                    //     name,
-                    //     id,
-                    //     result,
-                    //     mix_phrase,
-                    //     required_reagents,
-                    //     result_amount,
-                    //     &hidden
-                    // );
                 }
                 _ => {}
             };
