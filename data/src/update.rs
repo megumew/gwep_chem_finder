@@ -32,5 +32,5 @@ pub fn update() -> Result<String, reqwest::Error> {
         write!(file, "{}", git_file).expect("Failed to write to file");
     }
 
-    Ok(String::new())
+    Ok(String::from(PATH))
 }

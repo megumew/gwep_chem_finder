@@ -8,10 +8,15 @@ fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available Bases: {:?}", chemicals::BASES);
 
-    update();
+    let update_result = update();
+
+    let path = match update_result {
+        Ok(s) => s,
+        Err(e) => panic!("Update function failed: {}", e),
+    };
 
     // let result = dm_reader::dm_reader::read_file(String::from("recipes.DM"));
-    let compounds = parser::parse(String::from("data/Chemistry-Recipes.dm"));
+    let compounds = parser::parse(path);
 
     println!("There are {} compounds.", compounds.len());
 
