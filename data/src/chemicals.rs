@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 // static BASES: [Base; 30] = [
 //     Base { id: "aluminium" },
 //     Base { id: "barium" },
@@ -64,7 +65,7 @@ pub static BASES: [Base; 30] = [
     Base::Water,
 ];
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Reagent {
     name: String,
     quantity: u32,
@@ -74,6 +75,11 @@ impl Reagent {
     pub fn new(name: String, quantity: u32) -> Reagent {
         Reagent { name, quantity }
     }
+}
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(transparent)]
+pub struct Data {
+    pub compounds: Vec<Compound>,
 }
 
 #[derive(Debug)]
@@ -158,7 +164,7 @@ pub enum Base {
 //     }
 // }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Compound {
     internal_name: String,
     name: String,

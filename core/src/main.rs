@@ -1,12 +1,13 @@
-use chem::chemicals;
-use data::update::update;
-use dm_pest::parser;
+use data::chemicals::*;
+use data::fetch::update;
+use data::local::{deserialize, serialize};
+use data::parser;
 extern crate pest;
 extern crate pest_derive;
 
 fn main() {
     println!("Welcome to gwep chem finder!");
-    println!("Available Bases: {:?}", chemicals::BASES);
+    println!("Available Bases: {:?}", BASES);
 
     let update_result = update();
 
@@ -15,12 +16,20 @@ fn main() {
         Err(e) => panic!("Update function failed: {}", e),
     };
 
-    // let result = dm_reader::dm_reader::read_file(String::from("recipes.DM"));
     let compounds = parser::parse(path);
 
     println!("There are {} compounds.", compounds.len());
 
-    // for c in compounds {
-    //     println!("{:?}", c)
-    // }
+    let data = Data {
+        compounds: compounds,
+    };
+
+    serialize(&data);
+    let compounds = deserialize();
+
+    for c in &compounds {
+        println!("{:?}", c)
+    }
+
+    println!("There are {} compounds.", compounds.len());
 }

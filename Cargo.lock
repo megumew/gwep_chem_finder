@@ -54,16 +54,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "chem"
-version = "0.1.0"
-
-[[package]]
 name = "core"
 version = "0.1.0"
 dependencies = [
- "chem",
  "data",
- "dm_pest",
  "pest",
  "pest_derive",
 ]
@@ -107,7 +101,11 @@ dependencies = [
 name = "data"
 version = "0.1.0"
 dependencies = [
+ "pest",
+ "pest_derive",
  "reqwest",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -118,15 +116,6 @@ checksum = "f2fb860ca6fafa5552fb6d0e816a69c8e49f0908bf524e30a90d97c85892d506"
 dependencies = [
  "block-buffer",
  "crypto-common",
-]
-
-[[package]]
-name = "dm_pest"
-version = "0.1.0"
-dependencies = [
- "chem",
- "pest",
- "pest_derive",
 ]
 
 [[package]]
@@ -699,6 +688,20 @@ name = "serde"
 version = "1.0.144"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f747710de3dcd43b88c9168773254e809d8ddbdf9653b84e2554ab219f17860"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.144"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94ed3a816fb1d101812f83e789f888322c34e291f894f19590dc310963e87a00"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "serde_json"
