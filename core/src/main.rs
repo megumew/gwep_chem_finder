@@ -9,19 +9,18 @@ fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available Bases: {:?}", BASES);
 
-    //Find a way to report if update was needed if not skip the serialization and just deserialize
+    // Find a way to track if the script exists
     let update_result = update();
 
     let updated;
     let path = match update_result {
-        Ok(s) => {
-            updated = s.1;
-            s.0
+        (s, b) => {
+            updated = b;
+            s
         }
-        Err(e) => panic!("Update function failed: {}", e),
     };
 
-    println!("{} {}", updated, !data_exists());
+    println!("{} {}", updated, data_exists());
     if updated || !data_exists() {
         let compounds = parser::parse(path);
 
