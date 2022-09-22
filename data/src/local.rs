@@ -24,3 +24,8 @@ pub fn deserialize() -> Vec<Compound> {
         Err(e) => panic!("Failed to deserialize data: {}", e),
     }
 }
+
+pub fn data_exists() -> bool {
+    let cur_path = Path::new(PATH);
+    cur_path.exists()
+}
