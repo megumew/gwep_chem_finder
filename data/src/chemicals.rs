@@ -198,4 +198,13 @@ impl Compound {
             hidden,
         }
     }
+
+    // appends correct format but can only use Bases instead of compounds
+    pub fn chem_dispenser_format(&self) -> String {
+        let mut result = String::new();
+        for reagent in &self.required_reagents{
+            result = format!("{}{}={};", result, reagent.name, reagent.quantity);
+        }
+        result
+    }
 }

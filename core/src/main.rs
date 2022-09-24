@@ -35,9 +35,9 @@ fn main() {
 
     let compounds = deserialize();
 
-    // for c in &compounds {
-    //     println!("{:?}", c)
-    // }
+    for c in &compounds {
+        println!("{:?}", c.chem_dispenser_format())
+    }
 
     println!("There are {} compounds.", compounds.len());
 }
