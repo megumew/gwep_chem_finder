@@ -46,7 +46,6 @@ fn download_script() -> Result<String, reqwest::Error> {
 
     let git_file = match git_call {
         Ok(s) => {
-            println!("{}", s);
             s
         }
         Err(e) => return Err(e),

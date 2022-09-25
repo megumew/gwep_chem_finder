@@ -38,7 +38,7 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
         let mut id: String = String::new();
         let mut result: String = String::new();
         let mut mix_phrase: String = String::new();
-        let mut required_reagents: Vec<Reagent> = Vec::new();
+        let mut raw_reagents: Vec<RawReagent> = Vec::new();
         let mut result_amount: f32 = 0.0;
         let mut hidden: Option<bool> = None;
 
@@ -100,7 +100,7 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
                                 let chem = chem_data.into_inner().next().unwrap();
                                 let num = data_iter.next().unwrap();
 
-                                required_reagents.push(Reagent::new(
+                                raw_reagents.push(RawReagent::new(
                                     String::from(chem.as_str()),
                                     num.as_str().parse::<u32>().unwrap(),
                                 ))
@@ -124,7 +124,8 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
             id,
             result,
             mix_phrase,
-            required_reagents,
+            raw_reagents,
+            Vec::new(),
             result_amount,
             hidden,
         ))

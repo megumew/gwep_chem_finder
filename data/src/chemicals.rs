@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+
 // static BASES: [Base; 30] = [
 //     Base { id: "aluminium" },
 //     Base { id: "barium" },
@@ -66,23 +67,30 @@ pub static BASES: [Base; 30] = [
 ];
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Reagent {
+pub struct RawReagent {
     name: String,
     quantity: u32,
 }
 
-impl Reagent {
-    pub fn new(name: String, quantity: u32) -> Reagent {
-        Reagent { name, quantity }
+impl RawReagent {
+    pub fn new(name: String, quantity: u32) -> RawReagent {
+        RawReagent { name, quantity }
     }
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Reagent {
+    chemical: Chemical,
+    quantity: u32,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(transparent)]
 pub struct Data {
     pub compounds: Vec<Compound>,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum Chemical {
     Base(Base),
     Compound(Compound),
@@ -93,7 +101,7 @@ pub enum Chemical {
 //     id: &'static str,
 // }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum Base {
     Aluminium,
     Barium,
@@ -127,42 +135,12 @@ pub enum Base {
     Water,
 }
 
-// impl fmt::Display for Base {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         match *self {
-//             Base::Aluminium => write!(f, "♥"),
-//             Base::Barium => write!(f, "♦"),
-//             Base::Bromine => write!(f, "♠"),
-//             Base::Calcium => write!(f, "♠"),
-//             Base::Carbon => write!(f, "♠"),
-//             Base::Chlorine => write!(f, "♠"),
-//             Base::Chromium => write!(f, "♠"),
-//             Base::Copper => write!(f, "♠"),
-//             Base::Ethanol => write!(f, "♠"),
-//             Base::Fluorine => write!(f, "♠"),
-//             Base::Hydrogen => write!(f, "♠"),
-//             Base::Iodine => write!(f, "♠"),
-//             Base::Iron => write!(f, "♠"),
-//             Base::Lithium => write!(f, "♠"),
-//             Base::Magnesium => write!(f, "♠"),
-//             Base::Mercury => write!(f, "♠"),
-//             Base::Nickel => write!(f, "♠"),
-//             Base::Nitrogen => write!(f, "♠"),
-//             Base::Oxygen => write!(f, "♠"),
-//             Base::Phosphorus => write!(f, "♠"),
-//             Base::Plasma => write!(f, "♠"),
-//             Base::Platinum => write!(f, "♠"),
-//             Base::Potassium => write!(f, "♠"),
-//             Base::Radium => write!(f, "♠"),
-//             Base::Silicon => write!(f, "♠"),
-//             Base::Silver => write!(f, "♠"),
-//             Base::Sodium => write!(f, "♠"),
-//             Base::Sugar => write!(f, "♠"),
-//             Base::Sulfur => write!(f, "♠"),
-//             Base::Water => write!(f, "♠"),
-//         }
-//     }
-// }
+// Finding all of these will be difficult
+pub enum Ingredient{
+    Fuel,
+    FOOF,
+}
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Compound {
@@ -171,6 +149,7 @@ pub struct Compound {
     id: String,
     result: String,
     mix_phrase: String,
+    raw_reagents: Vec<RawReagent>,
     required_reagents: Vec<Reagent>,
     result_amount: f32,
     hidden: Option<bool>,
@@ -183,6 +162,7 @@ impl Compound {
         id: String,
         result: String,
         mix_phrase: String,
+        raw_reagents: Vec<RawReagent>,
         required_reagents: Vec<Reagent>,
         result_amount: f32,
         hidden: Option<bool>,
@@ -193,6 +173,7 @@ impl Compound {
             id,
             result,
             mix_phrase,
+            raw_reagents,
             required_reagents,
             result_amount,
             hidden,
@@ -202,7 +183,7 @@ impl Compound {
     // appends correct format but can only use Bases instead of compounds
     pub fn chem_dispenser_format(&self) -> String {
         let mut result = String::new();
-        for reagent in &self.required_reagents{
+        for reagent in &self.raw_reagents{
             result = format!("{}{}={};", result, reagent.name, reagent.quantity);
         }
         result

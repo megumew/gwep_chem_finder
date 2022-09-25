@@ -20,7 +20,7 @@ fn main() {
         }
     };
 
-    println!("{} {}", updated, data_exists());
+    // Consider adding a force update bool based off launch parameters or if an error occurs
     if updated || !data_exists() {
         let compounds = parser::parse(path);
 
