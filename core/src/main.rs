@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use data::chemicals::*;
 use data::fetch::update;
 use data::local::{data_exists, deserialize, serialize};
@@ -35,9 +37,16 @@ fn main() {
 
     let compounds = deserialize();
 
-    for c in &compounds {
-        println!("{:?}", c.chem_dispenser_format())
+    // Hashmap for reagent lookup needs to be constructed after this point
+
+    let mut compound_map: HashMap<String, Compound> = HashMap::with_capacity(compounds.len());
+
+    for c in compounds {
+        compound_map.insert(c.id.clone(), c);
     }
+
+    // recreate compounds vec after moving references into a lookup hashmap
+    let compounds = deserialize();
 
     println!("There are {} compounds.", compounds.len());
 }

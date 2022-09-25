@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // static BASES: [Base; 30] = [
 //     Base { id: "aluminium" },
@@ -141,12 +142,20 @@ pub enum Ingredient{
     FOOF,
 }
 
+pub struct ChemTree{
+    root: Option<Box<ChemTreeNode>>,
+}
+pub struct ChemTreeNode{
+    chemical: Chemical,
+    reagents: Vec<Option<Box<ChemTreeNode>>>
+}
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Compound {
     internal_name: String,
     name: String,
-    id: String,
+    pub id: String,
     result: String,
     mix_phrase: String,
     raw_reagents: Vec<RawReagent>,
@@ -180,12 +189,4 @@ impl Compound {
         }
     }
 
-    // appends correct format but can only use Bases instead of compounds
-    pub fn chem_dispenser_format(&self) -> String {
-        let mut result = String::new();
-        for reagent in &self.raw_reagents{
-            result = format!("{}{}={};", result, reagent.name, reagent.quantity);
-        }
-        result
-    }
 }
