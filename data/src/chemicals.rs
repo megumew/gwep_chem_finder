@@ -216,12 +216,30 @@ impl ChemTree {
         }
     }
 
-    pub fn print_dispenser_format(&mut self){
+    pub fn print_dispenser_format(&self){
         println!("Recipe for {}:", self.root.get_id());
-        
-        //for node in &self.root.get_reagents().unwrap().as_ref() {
 
-        //}
+        let mut pastable_string = String::new();
+        
+        for node in self.root.get_reagents() {
+            for reagent in node{
+                let result = reagent.print_branch();
+                match result.0{
+                    Chemical::Compound(compound) => {
+                        //
+                    }
+                    Chemical::Base(base) => {
+                        pastable_string.push_str(result.1.as_str());
+                    }
+                    Chemical::Ingredient(ingredient) => {
+                        //result = (&self.chemical, format!("{}={};", ingredient.get_id(), self.quantity));
+                    }
+                }
+            }
+        }
+
+        println!("{}", pastable_string);
+
     }
 
     pub fn populate(&mut self, compound_map: &HashMap<String, Compound>){
@@ -286,6 +304,25 @@ impl ChemTreeNode {
 
     fn get_reagents(&self) -> &Option<Vec<ChemTreeNode>>{
         &self.reagents
+    }
+
+    fn print_branch(&self) -> (&Chemical, String) {
+        let mut result:(&Chemical, String);
+
+        match &self.chemical{
+            Chemical::Compound(compound) => {
+                result = (&self.chemical, String::new())
+            }
+            Chemical::Base(base) => {
+                result = (&self.chemical, format!("{}={};", base.get_id(), self.quantity));
+            }
+            Chemical::Ingredient(ingredient) => {
+                result = (&self.chemical, format!("{}={};", ingredient.get_id(), self.quantity));
+            }
+        }
+
+        result
+
     }
 }
 
