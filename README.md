@@ -1,2 +1,2 @@
 # gwep_chem_finder
-A chemical finder for the SS13 goonstation servers
+A chemical recipe finder for the SS13 goonstation servers
