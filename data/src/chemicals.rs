@@ -221,7 +221,7 @@ impl ChemTree {
         
         //for node in &self.root.get_reagents().unwrap().as_ref() {
 
-        }
+        //}
     }
 
     pub fn populate(&mut self, compound_map: &HashMap<String, Compound>){

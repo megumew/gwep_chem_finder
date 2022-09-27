@@ -62,7 +62,7 @@ fn main() {
         compound_trees.insert(id, chem_tree);
     }
 
-    compound_trees.get("kerosene").unwrap().print_dispenser_format();
+    //compound_trees.get("kerosene").unwrap().print_dispenser_format();
 
     //println!("There are {} compounds.", compounds.len());
 }
