@@ -55,12 +55,14 @@ fn main() {
     let mut compound_trees:Box<HashMap<String, ChemTree>> = Box::new(HashMap::with_capacity(compounds.len()));
     for c in compounds{
         let id = c.get_id();
-        let node = ChemTreeNode::new(c.get_result_amount(), Chemical::Compound(c));
+        let node = ChemTreeNode::new(c.get_result_amount(), Chemical::Compound(c), None);
         println!("{}", node.get_id());
         let mut chem_tree = ChemTree::new(node);
         chem_tree.populate(&compound_map);
         compound_trees.insert(id, chem_tree);
     }
+
+    compound_trees.get("kerosene").unwrap().print_dispenser_format();
 
     //println!("There are {} compounds.", compounds.len());
 }
