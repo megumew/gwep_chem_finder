@@ -11,6 +11,10 @@ fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available Bases: {:?}", BASES);
 
+    for base in &BASES{
+        println!("{}", base.get_id());
+    }
+
     // Find a way to track if the script exists
     let update_result = update();
 
@@ -42,11 +46,22 @@ fn main() {
     let mut compound_map: HashMap<String, Compound> = HashMap::with_capacity(compounds.len());
 
     for c in compounds {
-        compound_map.insert(c.id.clone(), c);
+        compound_map.insert(c.get_id(), c);
     }
 
     // recreate compounds vec after moving references into a lookup hashmap
     let compounds = deserialize();
 
-    println!("There are {} compounds.", compounds.len());
+    let mut compound_trees:Box<HashMap<String, ChemTree>> = Box::new(HashMap::with_capacity(compounds.len()));
+
+    for c in compounds{
+        let id = c.get_id();
+        let node = ChemTreeNode::new(Chemical::Compound(c));
+        println!("{}", node.get_id());
+        let chem_tree = ChemTree::new(node);
+        chem_tree.populate(&compound_map);
+        compound_trees.insert(id, chem_tree);
+    }
+
+    //println!("There are {} compounds.", compounds.len());
 }

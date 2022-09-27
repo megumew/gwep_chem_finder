@@ -34,6 +34,47 @@ use std::collections::HashMap;
 //     Base { id: "water" },
 // ];
 
+#[derive(Serialize, Deserialize, Debug)]
+pub enum Base {
+    Aluminium,
+    Barium,
+    Bromine,
+    Calcium,
+    Carbon,
+    Chlorine,
+    Chromium,
+    Copper,
+    Ethanol,
+    Fluorine,
+    Hydrogen,
+    Iodine,
+    Iron,
+    Lithium,
+    Magnesium,
+    Mercury,
+    Nickel,
+    Nitrogen,
+    Oxygen,
+    Phosphorus,
+    Plasma,
+    Platinum,
+    Potassium,
+    Radium,
+    Silicon,
+    Silver,
+    Sodium,
+    Sugar,
+    Sulfur,
+    Water,
+}
+
+impl Base {
+    pub fn get_id(&self) -> String {
+        let id = format!("{:?}", self);
+        id.to_lowercase()
+    }
+}
+
 pub static BASES: [Base; 30] = [
     Base::Aluminium,
     Base::Barium,
@@ -97,43 +138,13 @@ pub enum Chemical {
     Compound(Compound),
 }
 
-// #[derive(Debug)]
-// struct Base {
-//     id: &'static str,
-// }
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum Base {
-    Aluminium,
-    Barium,
-    Bromine,
-    Calcium,
-    Carbon,
-    Chlorine,
-    Chromium,
-    Copper,
-    Ethanol,
-    Fluorine,
-    Hydrogen,
-    Iodine,
-    Iron,
-    Lithium,
-    Magnesium,
-    Mercury,
-    Nickel,
-    Nitrogen,
-    Oxygen,
-    Phosphorus,
-    Plasma,
-    Platinum,
-    Potassium,
-    Radium,
-    Silicon,
-    Silver,
-    Sodium,
-    Sugar,
-    Sulfur,
-    Water,
+impl Chemical {
+    pub fn get_id(&self) -> String {
+        match self {
+            Chemical::Base(base) => base.get_id(),
+            Chemical::Compound(compound) => compound.get_id(),
+        }
+    }   
 }
 
 // Finding all of these will be difficult
@@ -143,19 +154,45 @@ pub enum Ingredient{
 }
 
 pub struct ChemTree{
-    root: Option<Box<ChemTreeNode>>,
-}
-pub struct ChemTreeNode{
-    chemical: Chemical,
-    reagents: Vec<Option<Box<ChemTreeNode>>>
+    root: Box<ChemTreeNode>,
 }
 
+impl ChemTree {
+    pub fn new(root: ChemTreeNode) -> ChemTree{
+        ChemTree{
+            root: Box::new(root),
+        }
+    }
+
+    pub fn populate(&self, reagent_map: &HashMap<String, Compound>){
+        let id = self.root.get_id();
+        println!("Placeholder function for populating tree:\nID: {}\n{:?}", id , reagent_map.get(&id));
+    }
+}
+
+pub struct ChemTreeNode{
+    chemical: Chemical,
+    reagents: Box<Vec<Option<ChemTreeNode>>>
+}
+
+impl ChemTreeNode {
+    pub fn get_id(&self) -> String{
+        self.chemical.get_id()
+    }
+    
+}
+
+impl ChemTreeNode {
+    pub fn new(chemical: Chemical) -> ChemTreeNode{
+        ChemTreeNode { chemical: chemical, reagents: Box::new(Vec::new()) }
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Compound {
     internal_name: String,
     name: String,
-    pub id: String,
+    id: String,
     result: String,
     mix_phrase: String,
     raw_reagents: Vec<RawReagent>,
@@ -187,6 +224,11 @@ impl Compound {
             result_amount,
             hidden,
         }
+    }
+
+    //if problems occur change this to get result
+    pub fn get_id(&self) -> String{
+        self.id.clone()
     }
 
 }
