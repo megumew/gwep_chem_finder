@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::chemicals::*;
-use serde_json::{Result, Value};
+use serde_json;
 
 static PATH: &str = "data/data.json";
 

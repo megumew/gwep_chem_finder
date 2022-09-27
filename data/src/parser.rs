@@ -1,7 +1,7 @@
 use crate::chemicals::*;
 use pest::Parser;
 use pest_derive::Parser;
-use std::{fs, collections::HashMap};
+use std::fs;
 
 #[derive(Parser)]
 #[grammar = "DM.pest"]
