@@ -62,7 +62,12 @@ fn main() {
         compound_trees.insert(id, chem_tree);
     }
 
-    compound_trees.get("stabiliser").unwrap().print_dispenser_format();
+    // compound_trees.get("styptic_powder").unwrap().print_dispenser_format();
+    // compound_trees.get("ephedrine").unwrap().print_dispenser_format();
+    // compound_trees.get("thermite").unwrap().print_dispenser_format();
 
-    //println!("There are {} compounds.", compounds.len());
+    for c in compound_trees.iter(){
+        c.1.print_dispenser_format();
+    }
+
 }

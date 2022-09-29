@@ -155,7 +155,7 @@ impl Ingredient {
     }
 
     pub fn get_id(&self) -> String {
-        let id = format!("{:?}", self);
+        let id = format!("{}", self.id);
         id.to_lowercase()
     }
 }
@@ -217,28 +217,58 @@ impl ChemTree {
     }
 
     pub fn print_dispenser_format(&self){
-        println!("Recipe for {}:", self.root.get_id());
+        println!("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
+        println!("----\t{}\t----\n", self.root.get_id().to_uppercase());
+
 
         let mut pastable_string = String::new();
+        let mut compounds = String::new();
+        let mut ingredients = String::new();
         
         for node in self.root.get_reagents() {
             for reagent in node{
-                let result = reagent.print_branch();
+                let result = reagent.print_branch(0);
                 match result.0{
-                    Chemical::Compound(compound) => {
-                        //
+                    Chemical::Compound(_compound) => {
+                        compounds = format!("{}\n{}", compounds, result.1.as_str());
                     }
-                    Chemical::Base(base) => {
+                    Chemical::Base(_base) => {
                         pastable_string.push_str(result.1.as_str());
                     }
-                    Chemical::Ingredient(ingredient) => {
-                        //result = (&self.chemical, format!("{}={};", ingredient.get_id(), self.quantity));
+                    Chemical::Ingredient(_ingredient) => {
+                        ingredients.push_str(result.1.as_str());
                     }
                 }
             }
         }
 
-        println!("{}", pastable_string);
+        if !compounds.is_empty() || !ingredients.is_empty(){
+            println!("Non-base Reagents");
+            println!("....................................");
+    
+            if !compounds.is_empty(){
+    
+                println!("compounds");
+                println!("{}", compounds);
+            }
+    
+            if !ingredients.is_empty(){
+                println!("ingredients");
+                println!("{}", ingredients);
+            }
+            println!("....................................\n");
+    
+        }
+        
+        if !pastable_string.is_empty(){
+            println!("Base Reagents");
+            println!("....................................");
+            println!("{}", pastable_string);
+            println!("....................................");
+        }
+
+        println!("////////////////////////////////////\n");
+
 
     }
 
@@ -306,18 +336,58 @@ impl ChemTreeNode {
         &self.reagents
     }
 
-    fn print_branch(&self) -> (&Chemical, String) {
-        let mut result:(&Chemical, String);
+    // probably needs to be broken into seperate functions for each reagent type
+    fn print_branch(&self, layer: i8) -> (&Chemical, String) {
+        let result:(&Chemical, String);
+
+        let mut tab = String::new();
+        let mut c = layer;
+        while c > 0{
+            tab = format!("\t{}", tab);
+            c -= 1;
+        }
 
         match &self.chemical{
             Chemical::Compound(compound) => {
-                result = (&self.chemical, String::new())
+
+                let mut branch_strings = Vec::new();
+                for vec in self.get_reagents(){
+                    for node in vec{
+                        branch_strings.push(node.print_branch(layer + 1));
+                    }
+                }
+
+                let mut pastable_string = String::new();
+                let mut compounds = String::new();
+                let mut ingredients = String::new();
+
+                for s in branch_strings{
+                    match s.0{
+                        Chemical::Compound(_compound) => {
+                            compounds = format!("{}\n{}", compounds, s.1.as_str());
+                        }
+                        Chemical::Base(_base) => {
+                            pastable_string.push_str(s.1.as_str());
+                        }
+                        Chemical::Ingredient(_ingredient) => {
+                            ingredients.push_str(s.1.as_str());
+                        }
+                    }
+                }
+
+                let branch = format!("{tab}{pastable_string}\n{tab}{ingredients}\n{tab}{compounds}");
+
+                let compound_value = format!("{tab}{} {}", self.quantity, compound.get_id().to_uppercase());
+
+                let recipe  = format!("{}\n{tab}[\n{}\n{tab}]", compound_value, branch);
+
+                result = (&self.chemical, recipe);
             }
             Chemical::Base(base) => {
                 result = (&self.chemical, format!("{}={};", base.get_id(), self.quantity));
             }
             Chemical::Ingredient(ingredient) => {
-                result = (&self.chemical, format!("{}={};", ingredient.get_id(), self.quantity));
+                result = (&self.chemical, format!("[{} {}]", self.quantity, ingredient.get_id()));
             }
         }
 
