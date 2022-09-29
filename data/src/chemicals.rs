@@ -243,28 +243,28 @@ impl ChemTree {
         }
 
         if !compounds.is_empty() || !ingredients.is_empty(){
-            println!("Non-base Reagents");
-            println!("....................................");
+            println!("# Non-base Reagents #");
+            println!("+++++++++++++++++++++++++++++++++++++");
     
             if !compounds.is_empty(){
     
-                println!("compounds");
+                println!("_compounds_");
                 println!("{}", compounds);
             }
     
             if !ingredients.is_empty(){
-                println!("ingredients");
+                println!("_ingredients_");
                 println!("{}", ingredients);
             }
-            println!("....................................\n");
+            println!("+++++++++++++++++++++++++++++++++++++\n");
     
         }
         
         if !pastable_string.is_empty(){
-            println!("Base Reagents");
-            println!("....................................");
+            println!("# Base Reagents #");
+            println!("-------------------------------------");
             println!("{}", pastable_string);
-            println!("....................................");
+            println!("-------------------------------------");
         }
 
         println!("////////////////////////////////////\n");
@@ -375,11 +375,20 @@ impl ChemTreeNode {
                     }
                 }
 
-                let branch = format!("{tab}{pastable_string}\n{tab}{ingredients}\n{tab}{compounds}");
+                let mut branch = String::new();
+                if !pastable_string.is_empty(){
+                    branch = format!("\n{tab}\t{pastable_string}");
+                }
+                if !ingredients.is_empty(){
+                    branch = format!("{branch}\n{tab}\t{ingredients}");
+                }
+                if !compounds.is_empty(){
+                    branch = format!("{branch}\n{tab}{compounds}");
+                }
 
                 let compound_value = format!("{tab}{} {}", self.quantity, compound.get_id().to_uppercase());
 
-                let recipe  = format!("{}\n{tab}[\n{}\n{tab}]", compound_value, branch);
+                let recipe  = format!("{}\n{tab}[\n{}\n{tab}]\n", compound_value, branch);
 
                 result = (&self.chemical, recipe);
             }
