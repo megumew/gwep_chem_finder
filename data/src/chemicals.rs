@@ -267,6 +267,8 @@ impl ChemTree {
             println!("-------------------------------------");
         }
 
+        //self.root.chemical.
+
         println!("////////////////////////////////////\n");
 
 
@@ -421,6 +423,7 @@ pub struct Compound {
     raw_reagents: Vec<RawReagent>,
     required_reagents: Vec<Reagent>,
     result_amount: f32,
+    required_temperature: Option<String>,
     hidden: Option<bool>,
 }
 
@@ -434,6 +437,7 @@ impl Compound {
         raw_reagents: Vec<RawReagent>,
         required_reagents: Vec<Reagent>,
         result_amount: f32,
+        required_temperature: Option<String>,
         hidden: Option<bool>,
     ) -> Compound {
         Compound {
@@ -445,6 +449,7 @@ impl Compound {
             raw_reagents,
             required_reagents,
             result_amount,
+            required_temperature,
             hidden,
         }
     }

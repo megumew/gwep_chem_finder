@@ -127,6 +127,7 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
             raw_reagents,
             Vec::new(),
             result_amount,
+            None,
             hidden,
         ))
     }
