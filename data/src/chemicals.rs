@@ -216,6 +216,13 @@ impl ChemTree {
         }
     }
 
+    fn get_compound(&self) -> &Compound{
+        match &self.root.chemical {
+            Chemical::Compound(c) => c,
+            _ => panic!("A non compound was places at root of tree!")
+        }
+    }
+
     pub fn print_dispenser_format(&self){
         println!("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
         println!("----\t{}\t----\n", self.root.get_id().to_uppercase());
@@ -240,6 +247,17 @@ impl ChemTree {
                     }
                 }
             }
+        }
+
+        match self.get_compound().required_temperature {
+            Some(temp) => {
+                println!("# Required Temperature #");
+                println!("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                println!("{} K", temp);
+                println!("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+            }
+            None => {}
+
         }
 
         if !compounds.is_empty() || !ingredients.is_empty(){
@@ -390,7 +408,17 @@ impl ChemTreeNode {
 
                 let compound_value = format!("{tab}{} {}", self.quantity, compound.get_id().to_uppercase());
 
-                let recipe  = format!("{}\n{tab}[\n{}\n{tab}]\n", compound_value, branch);
+                let temp_val = compound.required_temperature;
+
+                let recipe = match temp_val {
+                    Some(temp) => {
+                        format!("{} (@{}K)\n{tab}[\n{}\n{tab}]\n", compound_value, temp, branch)
+                    }
+                    None => {
+                    format!("{}\n{tab}[\n{}\n{tab}]\n", compound_value, branch)
+                    }
+                };
+
 
                 result = (&self.chemical, recipe);
             }
@@ -423,7 +451,7 @@ pub struct Compound {
     raw_reagents: Vec<RawReagent>,
     required_reagents: Vec<Reagent>,
     result_amount: f32,
-    required_temperature: Option<String>,
+    required_temperature: Option<f32>,
     hidden: Option<bool>,
 }
 
@@ -437,7 +465,7 @@ impl Compound {
         raw_reagents: Vec<RawReagent>,
         required_reagents: Vec<Reagent>,
         result_amount: f32,
-        required_temperature: Option<String>,
+        required_temperature: Option<f32>,
         hidden: Option<bool>,
     ) -> Compound {
         Compound {

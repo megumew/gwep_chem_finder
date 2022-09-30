@@ -11,9 +11,9 @@ fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available Bases: {:?}", BASES);
 
-    for base in &BASES{
-        println!("{}", base.get_id());
-    }
+    // for base in &BASES{
+    //     println!("{}", base.get_id());
+    // }
 
     // Find a way to track if the script exists
     let update_result = update();
@@ -56,15 +56,15 @@ fn main() {
     for c in compounds{
         let id = c.get_id();
         let node = ChemTreeNode::new(c.get_result_amount(), Chemical::Compound(c), None);
-        println!("{}", node.get_id());
+        //println!("{}", node.get_id());
         let mut chem_tree = ChemTree::new(node);
         chem_tree.populate(&compound_map);
         compound_trees.insert(id, chem_tree);
     }
 
-    // compound_trees.get("styptic_powder").unwrap().print_dispenser_format();
-    // compound_trees.get("ephedrine").unwrap().print_dispenser_format();
-    // compound_trees.get("thermite").unwrap().print_dispenser_format();
+    // compound_trees.get("cleaner").unwrap().print_dispenser_format();
+    // compound_trees.get("capulettium_plus").unwrap().print_dispenser_format();
+    // compound_trees.get("phenol").unwrap().print_dispenser_format();
 
     for c in compound_trees.iter(){
         c.1.print_dispenser_format();

@@ -40,6 +40,7 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
         let mut mix_phrase: String = String::new();
         let mut raw_reagents: Vec<RawReagent> = Vec::new();
         let mut result_amount: f32 = 0.0;
+        let mut required_temperature: Option<f32> = None;
         let mut hidden: Option<bool> = None;
 
         for line in pair.into_inner() {
@@ -107,6 +108,32 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
                             }
                         }
                         "result_amount" => result_amount = value.as_str().parse::<f32>().unwrap(),
+                        "required_temperature" => {
+                            let mut temp_data = value.into_inner();        
+                            let mut temp_val = temp_data.next().unwrap();
+                            match temp_val.as_rule(){
+                                Rule::number => {
+                                    let celsius_val = temp_val.as_str().parse::<i8>().unwrap();
+                                    temp_val = temp_data.next().unwrap();
+                                    let offset =temp_val.as_str().parse::<f32>().unwrap();
+                                    let mut temp_result = offset;
+                                    match celsius_val {
+                                        0 => temp_result += 273.15,
+                                        20 => temp_result += 293.15,
+                                        _ => panic!("Temperature macro unexpected!")
+                                    }
+                                    
+                                    required_temperature = Some(temp_result);
+
+
+                                }
+                                Rule::num_val => {
+                                    required_temperature = Some(temp_val.as_str().parse::<f32>().unwrap())
+                                }
+                                _ => panic!("Parsed incorrect value from temperature!")
+                            }                 
+                            
+                        }
                         "hidden" => hidden = Some(true),
                         _ => {}
                     }
@@ -127,7 +154,7 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
             raw_reagents,
             Vec::new(),
             result_amount,
-            None,
+            required_temperature,
             hidden,
         ))
     }
