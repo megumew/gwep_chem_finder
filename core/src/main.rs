@@ -52,7 +52,15 @@ fn main() {
     // recreate compounds vec after moving references into a lookup hashmap
     let compounds = deserialize();
 
+    // Need to use results it seems but this reveals some issues where there are multiple recipe definitions
+    // for c in &compounds{
+    //     if c.get_id() != c.get_result(){
+    //         println!("id: {} result: {} instant: {}", c.get_id(), c.get_result(), c.is_instant())
+    //     }
+    // }
+
     let mut compound_trees:Box<HashMap<String, ChemTree>> = Box::new(HashMap::with_capacity(compounds.len()));
+
     for c in compounds{
         let id = c.get_id();
         let node = ChemTreeNode::new(c.get_result_amount(), Chemical::Compound(c), None);

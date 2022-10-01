@@ -40,8 +40,9 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
         let mut mix_phrase: String = String::new();
         let mut raw_reagents: Vec<RawReagent> = Vec::new();
         let mut result_amount: f32 = 0.0;
+        let mut instant: bool = false;
         let mut required_temperature: Option<f32> = None;
-        let mut hidden: Option<bool> = None;
+        let mut hidden: bool = false;
 
         for line in pair.into_inner() {
             match line.as_rule() {
@@ -108,6 +109,14 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
                             }
                         }
                         "result_amount" => result_amount = value.as_str().parse::<f32>().unwrap(),
+                        "instant" => {
+                            let i_val = value.as_str().parse::<i8>().unwrap();
+                            match i_val{
+                                0 => instant = false,
+                                1 => instant = true,
+                                _ => panic!("Unexpected value for instant!")
+                            }
+                        }
                         "required_temperature" => {
                             let mut temp_data = value.into_inner();        
                             let mut temp_val = temp_data.next().unwrap();
@@ -134,7 +143,7 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
                             }                 
                             
                         }
-                        "hidden" => hidden = Some(true),
+                        "hidden" => hidden = true,
                         _ => {}
                     }
                 }
@@ -154,6 +163,7 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
             raw_reagents,
             Vec::new(),
             result_amount,
+            instant,
             required_temperature,
             hidden,
         ))

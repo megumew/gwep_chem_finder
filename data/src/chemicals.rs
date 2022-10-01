@@ -452,7 +452,8 @@ pub struct Compound {
     required_reagents: Vec<Reagent>,
     result_amount: f32,
     required_temperature: Option<f32>,
-    hidden: Option<bool>,
+    instant: bool,
+    hidden: bool,
 }
 
 impl Compound {
@@ -465,8 +466,9 @@ impl Compound {
         raw_reagents: Vec<RawReagent>,
         required_reagents: Vec<Reagent>,
         result_amount: f32,
+        instant: bool,
         required_temperature: Option<f32>,
-        hidden: Option<bool>,
+        hidden: bool,
     ) -> Compound {
         Compound {
             internal_name,
@@ -477,6 +479,7 @@ impl Compound {
             raw_reagents,
             required_reagents,
             result_amount,
+            instant,
             required_temperature,
             hidden,
         }
@@ -485,6 +488,14 @@ impl Compound {
     //if problems occur change this to get result
     pub fn get_id(&self) -> String{
         self.id.clone()
+    }
+
+    pub fn get_result(&self) -> String{
+        self.result.clone()
+    }
+
+    pub fn is_instant(&self) -> bool{
+        self.instant
     }
 
     pub fn get_result_amount(&self) -> f32 {
