@@ -2,39 +2,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use once_cell::sync::Lazy;
 
-// static BASES: [Base; 30] = [
-//     Base { id: "aluminium" },
-//     Base { id: "barium" },
-//     Base { id: "bromine" },
-//     Base { id: "calcium" },
-//     Base { id: "carbon" },
-//     Base { id: "chlorine" },
-//     Base { id: "chromium" },
-//     Base { id: "copper" },
-//     Base { id: "ethanol" },
-//     Base { id: "fluorine" },
-//     Base { id: "hydrogen" },
-//     Base { id: "iodine" },
-//     Base { id: "iron" },
-//     Base { id: "lithium" },
-//     Base { id: "magnesium" },
-//     Base { id: "mercury" },
-//     Base { id: "nickel" },
-//     Base { id: "nitrogen" },
-//     Base { id: "oxygen" },
-//     Base { id: "phosphorus" },
-//     Base { id: "plasma" },
-//     Base { id: "platinum" },
-//     Base { id: "potassium" },
-//     Base { id: "radium" },
-//     Base { id: "silicon" },
-//     Base { id: "silver" },
-//     Base { id: "sodium" },
-//     Base { id: "sugar" },
-//     Base { id: "sulfur" },
-//     Base { id: "water" },
-// ];
-
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum Base {
     Aluminium,
