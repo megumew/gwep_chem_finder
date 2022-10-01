@@ -219,7 +219,7 @@ impl ChemTree {
     fn get_compound(&self) -> &Compound{
         match &self.root.chemical {
             Chemical::Compound(c) => c,
-            _ => panic!("A non compound was places at root of tree!")
+            _ => panic!("A non compound was placed at root of tree!")
         }
     }
 

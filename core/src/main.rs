@@ -46,7 +46,10 @@ fn main() {
     let mut compound_map: HashMap<String, Compound> = HashMap::with_capacity(compounds.len());
 
     for c in compounds {
-        compound_map.insert(c.get_id(), c);
+        match c.is_instant(){
+            true => compound_map.insert(c.get_id(), c),
+            false => compound_map.insert(c.get_id(), c),
+        };
     }
 
     // recreate compounds vec after moving references into a lookup hashmap
