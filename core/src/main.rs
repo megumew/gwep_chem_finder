@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use data::chem_tree::{ChemTree, ChemTreeNode};
 use data::chemicals::*;
 use data::fetch::update;
 use data::local::{data_exists, deserialize, serialize};
