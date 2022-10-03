@@ -162,6 +162,8 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
             mix_phrase,
             raw_reagents,
             Vec::new(),
+            None,
+            None,
             result_amount,
             instant,
             required_temperature,
