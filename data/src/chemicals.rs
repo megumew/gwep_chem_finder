@@ -248,5 +248,23 @@ impl Compound {
         &self.raw_reagents
     }
 
+    pub fn add_recipe(mut self, recipe: Vec<RawReagent>) -> Compound{
+        if self.alternate_recipes_raw.is_none(){
+            let mut vec:Vec<Vec<RawReagent>> = Vec::new();
+            vec.push(recipe);
+            self.alternate_recipes_raw = Some(vec);
+        }
+        else{
+            let mut raw_recipes = self.alternate_recipes_raw.unwrap();
+            raw_recipes.push(recipe);
+            self.alternate_recipes_raw = Some(raw_recipes);
+        }
+        self
+    }
+
+    pub fn has_alt_recipes(&self) -> bool {
+        !self.alternate_recipes_raw.is_none()
+    }
+
 
 }

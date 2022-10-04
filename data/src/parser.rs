@@ -46,7 +46,10 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
 
         for line in pair.into_inner() {
             match line.as_rule() {
-                Rule::identifier => internal_name = String::from(line.as_str()),
+                Rule::identifier => {
+                    internal_name = String::from(line.as_str());
+                    // Used to track if this may be a alternate recipe
+                },
                 Rule::field => {
                     let mut pair = line.into_inner();
                     let field = pair.next().unwrap();
@@ -153,22 +156,28 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
                 _ => println!("{:?}", line.as_rule()),
             }
         }
-
-        compounds.push(Compound::new(
-            internal_name,
-            name,
-            id,
-            result,
-            mix_phrase,
-            raw_reagents,
-            Vec::new(),
-            None,
-            None,
-            result_amount,
-            instant,
-            required_temperature,
-            hidden,
-        ))
+        if name.is_empty() && result.is_empty(){
+            let old_comp = compounds.pop().unwrap();
+            let new_comp = old_comp.add_recipe(raw_reagents);
+            compounds.push(new_comp);
+        }else{
+            compounds.push(Compound::new(
+                internal_name,
+                name,
+                id,
+                result,
+                mix_phrase,
+                raw_reagents,
+                Vec::new(),
+                None,
+                None,
+                result_amount,
+                instant,
+                required_temperature,
+                hidden,
+            ))
+        }
+        
     }
     compounds
 }
