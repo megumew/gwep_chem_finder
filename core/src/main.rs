@@ -45,22 +45,27 @@ fn main() {
     // Hashmap for reagent lookup needs to be constructed after this point
 
     let mut compound_map: HashMap<String, Compound> = HashMap::with_capacity(compounds.len());
+    let mut result_map: HashMap<String, Vec<String>> = HashMap::with_capacity(compounds.len());
 
-    for c in compounds {
-        match c.is_instant(){
-            true => compound_map.insert(c.get_id(), c),
-            false => compound_map.insert(c.get_id(), c),
-        };
-    }
-
-    // recreate compounds vec after moving references into a lookup hashmap
-    let compounds = deserialize();
-
+    // registers all possible results with their respective ID
     for c in &compounds{
-        if c.has_alt_recipes() {
-            println!("{:?}", c)
+        if !c.get_result().is_empty(){
+            result_map.entry(c.get_result()).or_default().push(c.get_id()); 
         }
     }
+
+    for r in result_map{
+        println!("{:?}", r);
+    }
+
+    for c in compounds {        
+        compound_map.insert(c.get_id(), c);
+
+    }
+
+    
+
+    let compounds = deserialize();
 
     let mut compound_trees:Box<HashMap<String, ChemTree>> = Box::new(HashMap::with_capacity(compounds.len()));
 
