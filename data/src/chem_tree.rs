@@ -182,7 +182,6 @@ impl ChemTreeNode {
 
                 let mut branch_strings = Vec::new();
                 for reaction in self.get_reagents(){
-
                     for reagent in reaction {
                         for node in reagent {
                             branch_strings.push(node.print_branch(layer + 1));
@@ -208,7 +207,7 @@ impl ChemTreeNode {
                         }
                     }
                 }
-
+                let recipe_amount = compound.recipe_amount();
                 let mut branch = String::new();
                 if !pastable_string.is_empty(){
                     branch = format!("{branch}\n{tab}\t{pastable_string}");
@@ -217,19 +216,34 @@ impl ChemTreeNode {
                     branch = format!("{branch}\n{tab}\t{ingredients}");
                 }
                 if !compounds.is_empty(){
-                    branch = format!("{branch}\n{tab}{compounds}");
+                    if recipe_amount == 1 {
+                        branch = format!("{branch}\n{tab}{compounds}");
+                    }
+                    else {
+                        
+                        branch = format!("{branch}\n{tab}{compounds}");
+                    }
                 }
 
                 let compound_value = format!("{tab}{} {}", self.quantity, compound.get_internal_name().to_uppercase());
 
                 let temp_val = compound.get_required_temp();
-
                 let recipe = match temp_val {
                     Some(temp) => {
-                        format!("{} (@{}K)\n{tab}{}\n{tab}\n", compound_value, temp, branch)
+                        if recipe_amount <= 1 {
+                            format!("{} (@{}K)\n{tab}{}\n{tab}\n", compound_value, temp, branch)
+                        }
+                        else {
+                            format!("{} (@{}K) | ({}) Recipes\n{tab}{}\n{tab}\n", compound_value, temp, recipe_amount, branch)
+                        }
                     }
                     None => {
-                    format!("{}\n{tab}{}\n{tab}\n", compound_value, branch)
+                        if recipe_amount == 1 {
+                            format!("{}\n{tab}{}\n{tab}\n", compound_value, branch)
+                        }
+                        else {
+                            format!("{} | ({}) Recipes\n{tab}{}\n{tab}\n", compound_value, compound.recipe_amount(), branch)
+                        }
                     }
                 };
 

@@ -11,7 +11,6 @@ extern crate pest_derive;
 
 fn main() {
     println!("Welcome to gwep chem finder!");
-    println!("Available Bases: {:?}", BASES);
 
     // for base in &BASES{
     //     println!("{}", base.get_id());
@@ -55,17 +54,13 @@ fn main() {
         }
     }
 
-    for r in result_map{
-        println!("{:?}", r);
-    }
-
     for c in &compounds {
         compound_map.insert(c.get_internal_name(), c.clone());
     }
 
     let mut compound_trees:Box<HashMap<String, ChemTree>> = Box::new(HashMap::with_capacity(compounds.len()));
 
-    for c in compounds{
+    for c in compounds.clone() {
         let name = c.get_internal_name();
         let node = ChemTreeNode::new(c.get_specific_reaction_result_amount(0), Chemical::Compound(c), None);
         //println!("{}", node.get_id());
@@ -76,22 +71,41 @@ fn main() {
 
     // Command Line Interface for looking up Compounds
     loop {
-        println!("Enter your input, or type 'quit' to exit");
+        println!("Enter your input, command, or type '-help' to show all commands");
         let mut user_input = String::new();
         match io::stdin().read_line(&mut user_input) {
-            Ok(_) =>  {
-                if user_input.trim().to_lowercase() == "quit" || user_input.trim().to_lowercase() == "'quit'" {
-                    break
-                }
-            },
+            Ok(_) =>  {},
             Err(_) => println!("Error"),
         }
-        let response = compound_trees.get(&user_input.trim().to_lowercase());
-
-        match response {
-            Some(x) =>  { x.print_dispenser_format() },
-            None => { 
-                println!("{} is not a valid Compound!", user_input.trim());
+        let trimmed = user_input.trim();
+        let lowercase = trimmed.to_lowercase();
+        if lowercase == "-quit" {
+            println!("Goodbye :)");
+            break
+        }
+        else if lowercase == "-help" || lowercase == "help" {
+            println!("-help: Prints out this page");
+            println!("-quit: Quits the program");
+            println!("-list: Lists out all available Compounds for lookup");
+            println!("-bases: Lists out all Bases");
+            println!("To look up a specific Compound, simply input its name in");
+        }
+        else if lowercase == "-list" {
+            println!("There are {} compounds.", compounds.len());
+            for r in &result_map {
+                println!("{:?}", r);
+            }
+        }
+        else if lowercase == "-bases" {
+            println!("Available Bases: {:?}", BASES);
+        }
+        else {
+            let response = compound_trees.get(&lowercase);
+            match response {
+                Some(x) =>  { x.print_dispenser_format() },
+                None => {
+                    println!("{} is not a valid Compound!", trimmed);
+                }
             }
         }
     }
