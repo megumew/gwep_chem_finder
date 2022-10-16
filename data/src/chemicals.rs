@@ -165,26 +165,44 @@ impl Chemical {
         match self {
             Chemical::Base(base) => base.get_id(),
             Chemical::Ingredient(ingredient) => ingredient.get_id(),
-            Chemical::Compound(compound) => compound.get_id(),
+            Chemical::Compound(compound) => compound.get_internal_name(),
 
         }
     }   
 }
 
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct Reaction {
+    id: String,
+    raw_reagents: Vec<RawReagent>,
+    required_reagents: Vec<Reagent>,
+    result_amount: f32,
+}
+
+impl Reaction {
+    pub fn new(
+        id: String,
+        raw_reagents: Vec<RawReagent>,
+        required_reagents: Vec<Reagent>,
+        result_amount: f32,
+    ) -> Reaction {
+        Reaction {
+            id,
+            raw_reagents,
+            required_reagents,
+            result_amount,
+        }
+    }
+}
 
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Compound {
     internal_name: String,
     name: String,
-    id: String,
     result: String,
+    reactions: Vec<Reaction>,
     mix_phrase: String,
-    raw_reagents: Vec<RawReagent>,
-    required_reagents: Vec<Reagent>,
-    alternate_recipes_raw: Option<Vec<Vec<RawReagent>>>,
-    alternate_recipes: Option<Vec<Vec<Reagent>>>,
-    result_amount: f32,
     required_temperature: Option<f32>,
     instant: bool,
     hidden: bool,
@@ -194,76 +212,73 @@ impl Compound {
     pub fn new(
         internal_name: String,
         name: String,
-        id: String,
         result: String,
+        reactions: Vec<Reaction>,
         mix_phrase: String,
-        raw_reagents: Vec<RawReagent>,
-        required_reagents: Vec<Reagent>,
-        alternate_recipes_raw: Option<Vec<Vec<RawReagent>>>,
-        alternate_recipes: Option<Vec<Vec<Reagent>>>,
-        result_amount: f32,
-        instant: bool,
         required_temperature: Option<f32>,
+        instant: bool,
         hidden: bool,
     ) -> Compound {
         Compound {
             internal_name,
             name,
-            id,
             result,
+            reactions,
             mix_phrase,
-            raw_reagents,
-            required_reagents,
-            alternate_recipes_raw,
-            alternate_recipes,
-            result_amount,
-            instant,
             required_temperature,
+            instant,
             hidden,
         }
     }
 
-    //if problems occur change this to get result
-    pub fn get_id(&self) -> String{
-        self.id.clone()
-    }
-
-    pub fn get_result(&self) -> String{
+    pub fn get_result(&self) -> String {
         self.result.clone()
     }
+    
+    pub fn result_amount(&self, u: usize) -> f32 {
+        self.reactions[u].result_amount
+    }
 
-    pub fn is_instant(&self) -> bool{
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn get_internal_name(&self) -> String {
+        self.internal_name.clone()
+    }
+
+    pub fn is_instant(&self) -> bool {
         self.instant
     }
 
-    pub fn get_result_amount(&self) -> f32 {
-        self.result_amount.clone()
+    pub fn get_specific_reaction_result_amount(&self, u: usize) -> f32 {
+        self.reactions[u].result_amount
     }
 
     pub fn get_required_temp(&self) -> Option<f32> {
         self.required_temperature
     }
-    
-    pub fn get_reagents(&self) -> &Vec<RawReagent> {
-        &self.raw_reagents
+
+    pub fn get_reagents_of_reaction(&self, u: usize) -> &Vec<RawReagent> {
+        &self.reactions[u].raw_reagents
     }
 
-    pub fn add_recipe(mut self, recipe: Vec<RawReagent>) -> Compound{
-        if self.alternate_recipes_raw.is_none(){
-            let mut vec:Vec<Vec<RawReagent>> = Vec::new();
-            vec.push(recipe);
-            self.alternate_recipes_raw = Some(vec);
-        }
-        else{
-            let mut raw_recipes = self.alternate_recipes_raw.unwrap();
-            raw_recipes.push(recipe);
-            self.alternate_recipes_raw = Some(raw_recipes);
-        }
+    pub fn get_all_reagents(&self) -> Vec<&Vec<RawReagent>> {
+        let mut vec = Vec::new();
+
+        for i in &self.reactions {
+            vec.push(&i.raw_reagents)
+        };
+        vec
+    }
+
+    pub fn add_reaction(mut self, new_reaction: Reaction) -> Compound {
+        self.reactions.push(new_reaction);
         self
     }
 
-    pub fn has_alt_recipes(&self) -> bool {
-        !self.alternate_recipes_raw.is_none()
+    pub fn recipe_amount(&self) -> usize {
+        self.reactions.len()
     }
 
 
