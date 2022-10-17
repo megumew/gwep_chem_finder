@@ -17,7 +17,7 @@ pub fn serialize(compounds: &Data) {
     write!(file, "{}", data).expect("Failed to write to file");
 }
 
-pub fn deserialize() -> Vec<Compound> {
+pub fn deserialize() -> Vec<Reaction> {
     let file = fs::read_to_string(PATH).expect("cannot read file");
     match serde_json::from_str(file.as_str()) {
         Ok(result) => return result,

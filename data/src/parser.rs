@@ -8,7 +8,7 @@ use std::fs;
 pub struct DMParser;
 
 //will return data structure containing all of the Compounds
-pub fn parse(path: String) -> Vec<Compound> {
+pub fn parse(path: String) -> Vec<Reaction> {
     let unparsed_file = fs::read_to_string(path).expect("cannot read file");
 
     let file = DMParser::parse(Rule::file, &unparsed_file).unwrap_or_else(|e| panic!("{}", e));
@@ -29,8 +29,8 @@ pub fn parse(path: String) -> Vec<Compound> {
     to_struct(compound_pairs)
 }
 
-fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
-    let mut compounds: Vec<Compound> = Vec::new();
+fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
+    let mut compounds: Vec<Reaction> = Vec::new();
 
     for pair in pairs {
         let mut internal_name: String = String::new();
@@ -158,14 +158,14 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
                 _ => println!("{:?}", line.as_rule()),
             }
         }
-        let reaction = Reaction::new(id, raw_reagents, Vec::new(), result_amount);
+        let reaction = Recipe::new(id, raw_reagents, Vec::new(), result_amount);
 
         if name.is_empty() && result.is_empty(){
             let old_comp = compounds.pop().unwrap();
-            let new_comp = old_comp.add_reaction(reaction);
+            let new_comp = old_comp.add_recipe(reaction);
             compounds.push(new_comp);
         }else{
-            compounds.push(Compound::new(
+            compounds.push(Reaction::new(
                 internal_name,
                 name,
                 result,

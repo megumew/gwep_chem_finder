@@ -13,7 +13,7 @@ extern crate pest_derive;
 fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available Bases: {:?}", BASES);
-    
+
     let update_result = update();
 
     let updated;
@@ -39,12 +39,11 @@ fn main() {
 
     let compounds = deserialize();
 
-    // Hashmap for reagent lookup needs to be constructed after this point
-
-    let mut compound_map: HashMap<String, Compound> = HashMap::with_capacity(compounds.len());
+    //This is a map of all the rection names
+    let mut compound_map: HashMap<String, Reaction> = HashMap::with_capacity(compounds.len());
     let mut result_map: HashMap<String, Vec<String>> = HashMap::with_capacity(compounds.len());
 
-    // registers all possible results with their respective ID
+    // registers all possible results with their respective internal names
     for c in &compounds{
         if !c.get_result().is_empty(){
             result_map.entry(c.get_result()).or_default().push(c.get_internal_name()); 
@@ -63,7 +62,7 @@ fn main() {
 
     for c in compounds{
         let name = c.get_internal_name();
-        let node = ChemTreeNode::new(c.get_specific_reaction_result_amount(0), Chemical::Compound(c), None);
+        let node = ChemTreeNode::new(c.get_specific_recipe_result_amount(0), Chemical::Compound(c), None);
         //println!("{}", node.get_id());
         let mut chem_tree = ChemTree::new(node);
         chem_tree.populate(&compound_map);

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::chemicals::{Compound, Chemical, Ingredient, BASES_MAP};
+use crate::chemicals::{Reaction, Chemical, Ingredient, BASES_MAP};
 
 #[derive(Debug)]
 pub struct ChemTree{
@@ -14,7 +14,7 @@ impl ChemTree {
         }
     }
 
-    fn get_compound(&self) -> &Compound{
+    fn get_compound(&self) -> &Reaction{
         match &self.root.chemical {
             Chemical::Compound(c) => c,
             _ => panic!("A non compound was placed at root of tree!")
@@ -90,7 +90,7 @@ impl ChemTree {
 
     }
 
-    pub fn populate(&mut self, compound_map: &HashMap<String, Compound>){
+    pub fn populate(&mut self, compound_map: &HashMap<String, Reaction>){
 
         let id = self.root.get_id();
         let chem = Chemical::Compound(compound_map.get(&id).unwrap().clone());
@@ -100,9 +100,9 @@ impl ChemTree {
         self.root.push_root_branches(branches);
     }
 
-    fn populate_branches(chem: Chemical, compound_map: &HashMap<String, Compound>) -> Vec<ChemTreeNode>{
+    fn populate_branches(chem: Chemical, compound_map: &HashMap<String, Reaction>) -> Vec<ChemTreeNode>{
         let id = chem.get_id();
-        let raw_reagents = compound_map.get(&id).unwrap().get_reagents_of_reaction(0);
+        let raw_reagents = compound_map.get(&id).unwrap().get_reagents_of_recipe(0);
         let mut branches: Vec<ChemTreeNode> = Vec::new();
         
 

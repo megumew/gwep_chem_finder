@@ -150,13 +150,13 @@ pub struct Reagent {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(transparent)]
 pub struct Data {
-    pub compounds: Vec<Compound>,
+    pub compounds: Vec<Reaction>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum Chemical {
     Base(Base),
-    Compound(Compound),
+    Compound(Reaction),
     Ingredient(Ingredient),
 }
 
@@ -172,21 +172,21 @@ impl Chemical {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct Reaction {
+pub struct Recipe {
     id: String,
     raw_reagents: Vec<RawReagent>,
     required_reagents: Vec<Reagent>,
     result_amount: f32,
 }
 
-impl Reaction {
+impl Recipe {
     pub fn new(
         id: String,
         raw_reagents: Vec<RawReagent>,
         required_reagents: Vec<Reagent>,
         result_amount: f32,
-    ) -> Reaction {
-        Reaction {
+    ) -> Recipe {
+        Recipe {
             id,
             raw_reagents,
             required_reagents,
@@ -197,33 +197,33 @@ impl Reaction {
 
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct Compound {
+pub struct Reaction {
     internal_name: String,
     name: String,
     result: String,
-    reactions: Vec<Reaction>,
+    recipes: Vec<Recipe>,
     mix_phrase: String,
     required_temperature: Option<f32>,
     instant: bool,
     hidden: bool,
 }
 
-impl Compound {
+impl Reaction {
     pub fn new(
         internal_name: String,
         name: String,
         result: String,
-        reactions: Vec<Reaction>,
+        recipes: Vec<Recipe>,
         mix_phrase: String,
         required_temperature: Option<f32>,
         instant: bool,
         hidden: bool,
-    ) -> Compound {
-        Compound {
+    ) -> Reaction {
+        Reaction {
             internal_name,
             name,
             result,
-            reactions,
+            recipes,
             mix_phrase,
             required_temperature,
             instant,
@@ -236,7 +236,7 @@ impl Compound {
     }
     
     pub fn result_amount(&self, u: usize) -> f32 {
-        self.reactions[u].result_amount
+        self.recipes[u].result_amount
     }
 
     pub fn get_name(&self) -> String {
@@ -251,34 +251,34 @@ impl Compound {
         self.instant
     }
 
-    pub fn get_specific_reaction_result_amount(&self, u: usize) -> f32 {
-        self.reactions[u].result_amount
+    pub fn get_specific_recipe_result_amount(&self, u: usize) -> f32 {
+        self.recipes[u].result_amount
     }
 
     pub fn get_required_temp(&self) -> Option<f32> {
         self.required_temperature
     }
 
-    pub fn get_reagents_of_reaction(&self, u: usize) -> &Vec<RawReagent> {
-        &self.reactions[u].raw_reagents
+    pub fn get_reagents_of_recipe(&self, u: usize) -> &Vec<RawReagent> {
+        &self.recipes[u].raw_reagents
     }
 
     pub fn get_all_reagents(&self) -> Vec<&Vec<RawReagent>> {
         let mut vec = Vec::new();
 
-        for i in &self.reactions {
+        for i in &self.recipes {
             vec.push(&i.raw_reagents)
         };
         vec
     }
 
-    pub fn add_reaction(mut self, new_reaction: Reaction) -> Compound {
-        self.reactions.push(new_reaction);
+    pub fn add_recipe(mut self, new_recipe: Recipe) -> Reaction {
+        self.recipes.push(new_recipe);
         self
     }
 
     pub fn recipe_amount(&self) -> usize {
-        self.reactions.len()
+        self.recipes.len()
     }
 
 
