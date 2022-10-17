@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::env;
 use std::io;
 
 use data::chem_tree::{ChemTree, ChemTreeNode};
@@ -74,25 +75,31 @@ fn main() {
         compound_trees.insert(name, chem_tree);
     }
 
-    // Command Line Interface for looking up Compounds
-    // loop {
-    //     println!("Enter your input, or type 'quit' to exit");
-    //     let mut user_input = String::new();
-    //     match io::stdin().read_line(&mut user_input) {
-    //         Ok(_) =>  {
-    //             if user_input.trim().to_lowercase() == "quit" || user_input.trim().to_lowercase() == "'quit'" {
-    //                 break
-    //             }
-    //         },
-    //         Err(_) => println!("Error"),
-    //     }
-    //     let response = compound_trees.get(&user_input.trim().to_lowercase());
 
-    //     match response {
-    //         Some(x) =>  { x.print_dispenser_format() },
-    //         None => { 
-    //             println!("{} is not a valid Compound!", user_input.trim());
-    //         }
-    //     }
-    // }
+    let args: Vec<String> = env::args().collect();
+
+    // Command Line Interface for looking up Compounds
+    if args.len() > 1 && args[1] == "cli"{
+        loop {
+            println!("Enter your input, or type 'quit' to exit");
+            let mut user_input = String::new();
+            match io::stdin().read_line(&mut user_input) {
+                Ok(_) =>  {
+                    if user_input.trim().to_lowercase() == "quit" || user_input.trim().to_lowercase() == "'quit'" {
+                        break
+                    }
+                },
+                Err(_) => println!("Error"),
+            }
+            let response = compound_trees.get(&user_input.trim().to_lowercase());
+    
+            match response {
+                Some(x) =>  { x.print_dispenser_format() },
+                None => { 
+                    println!("{} is not a valid Compound!", user_input.trim());
+                }
+            }
+        }
+    }
+    
 }
