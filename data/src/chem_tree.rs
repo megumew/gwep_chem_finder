@@ -23,69 +23,66 @@ impl ChemTree {
 
     pub fn print_dispenser_format(&self){
         println!("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
-        println!("----\t{}\t----", self.root.get_id().to_uppercase());
+        println!("----\t{}\t----\n", self.root.get_id().to_uppercase());
+
+
+        let mut pastable_string = String::new();
+        let mut compounds = String::new();
+        let mut ingredients = String::new();
         
         for node in self.root.get_reagents() {
-            println!();
-            println!("There are ({}) possible recipes", node.len());
-            for reaction in node {
-                println!("");
-                println!("--------------Recipe--------------");
-                println!("");
-                let mut pastable_string = String::new();
-                let mut compounds = String::new();
-                let mut ingredients = String::new();
-                for reagent in reaction{
-                    let result = reagent.print_branch(0);
-                    match result.0{
-                        Chemical::Compound(_compound) => {
-                            compounds = format!("{} {}", compounds, result.1.as_str());
-                        }
-                        Chemical::Base(_base) => {
-                            pastable_string.push_str(result.1.as_str());
-                        }
-                        Chemical::Ingredient(_ingredient) => {
-                            ingredients.push_str(result.1.as_str());
-                        }
+            for reagent in node{
+                let result = reagent.print_branch(0);
+                match result.0{
+                    Chemical::Compound(_compound) => {
+                        compounds = format!("{}\n{}", compounds, result.1.as_str());
                     }
-                }
-                match self.get_compound().get_required_temp() {
-                    Some(temp) => {
-                        println!("# Required Temperature #");
-                        println!("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                        println!("{} K", temp);
-                        println!("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+                    Chemical::Base(_base) => {
+                        pastable_string.push_str(result.1.as_str());
                     }
-                    None => {}
-        
-                }
-        
-                if !compounds.is_empty() || !ingredients.is_empty(){
-                    println!("# Non-base Reagents #");
-                    println!("+++++++++++++++++++++++++++++++++++++");
-            
-                    if !compounds.is_empty(){
-            
-                        println!("_compounds_");
-                        println!("{}", compounds);
+                    Chemical::Ingredient(_ingredient) => {
+                        ingredients.push_str(result.1.as_str());
                     }
-            
-                    if !ingredients.is_empty(){
-                        println!("_ingredients_");
-                        println!("{}", ingredients);
-                    }
-                    println!("+++++++++++++++++++++++++++++++++++++\n");
-            
-                }
-                
-                if !pastable_string.is_empty(){
-                    println!("# Base Reagents #");
-                    println!("-------------------------------------");
-                    println!("{}", pastable_string);
-                    println!("-------------------------------------");
                 }
             }
         }
+
+        match self.get_compound().get_required_temp() {
+            Some(temp) => {
+                println!("# Required Temperature #");
+                println!("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                println!("{} K", temp);
+                println!("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+            }
+            None => {}
+
+        }
+
+        if !compounds.is_empty() || !ingredients.is_empty(){
+            println!("# Non-base Reagents #");
+            println!("+++++++++++++++++++++++++++++++++++++");
+    
+            if !compounds.is_empty(){
+    
+                println!("_compounds_");
+                println!("{}", compounds);
+            }
+    
+            if !ingredients.is_empty(){
+                println!("_ingredients_");
+                println!("{}", ingredients);
+            }
+            println!("+++++++++++++++++++++++++++++++++++++\n");
+    
+        }
+        
+        if !pastable_string.is_empty(){
+            println!("# Base Reagents #");
+            println!("-------------------------------------");
+            println!("{}", pastable_string);
+            println!("-------------------------------------");
+        }
+
         //self.root.chemical.
 
         println!("////////////////////////////////////\n");
@@ -103,46 +100,42 @@ impl ChemTree {
         self.root.push_root_branches(branches);
     }
 
-    fn populate_branches(chem: Chemical, compound_map: &HashMap<String, Compound>) -> Vec<Vec<ChemTreeNode>>{
+    fn populate_branches(chem: Chemical, compound_map: &HashMap<String, Compound>) -> Vec<ChemTreeNode>{
         let id = chem.get_id();
-        let all_reactions = compound_map.get(&id).unwrap().get_all_reagents();
-        let mut all_branches: Vec<Vec<ChemTreeNode>> = Vec::new();
+        let raw_reagents = compound_map.get(&id).unwrap().get_reagents_of_reaction(0);
+        let mut branches: Vec<ChemTreeNode> = Vec::new();
+        
 
-        for raw_reagents in all_reactions {
-            let mut branch: Vec<ChemTreeNode> = Vec::new();
+        for reagent in raw_reagents{
+            let mut reagents: Option<Vec<ChemTreeNode>> = None;
+            let chemical: Chemical;
+            let name = &reagent.name;
+            let mut quantity = reagent.quantity as f32;
 
-            for reagent in raw_reagents {
-                let mut reagents: Option<Vec<Vec<ChemTreeNode>>> = None;
-                let chemical: Chemical;
-                let name = &reagent.name;
-                let mut quantity = reagent.quantity as f32;
-    
-                if compound_map.contains_key(name){
-                    chemical = Chemical::Compound(compound_map.get(name).unwrap().clone());
-                    /* The following line causes a Stack overflow using a Compound's "name" as a key for the compound_map instead of "internal_name". Whoever made both a non-unique "id" field and a non-unique "name" field deserves eternal suffering */
-                    reagents = Some(Self::populate_branches(chemical.clone(), &compound_map));
-                    quantity = match &chemical {
-                        Chemical::Compound(c) => c.result_amount(0),
-                        _ => panic!("how???"),
-                    }
-                }else if BASES_MAP.contains_key(&name.as_str()){
-                    chemical = Chemical::Base(BASES_MAP.get(&name.as_str()).unwrap().clone());
-                }else{
-                    chemical = Chemical::Ingredient(Ingredient::new(name.clone()));
+            if compound_map.contains_key(name){
+                chemical = Chemical::Compound(compound_map.get(name).unwrap().clone());
+                /* The following line causes a Stack overflow using a Compound's "name" as a key for the compound_map instead of "internal_name". Whoever made both a non-unique "id" field and a non-unique "name" field deserves eternal suffering */
+                reagents = Some(Self::populate_branches(chemical.clone(), &compound_map));
+                quantity = match &chemical {
+                    Chemical::Compound(c) => c.result_amount(0),
+                    _ => panic!("how???"),
                 }
-    
-                let reagent_node = ChemTreeNode::new(
-                    quantity,
-                    chemical,
-                    reagents
-                );
-    
-                branch.push(reagent_node);
+            }else if BASES_MAP.contains_key(&name.as_str()){
+                chemical = Chemical::Base(BASES_MAP.get(&name.as_str()).unwrap().clone());
+            }else{
+                chemical = Chemical::Ingredient(Ingredient::new(name.clone()));
             }
-            all_branches.push(branch)
+
+            let reagent_node = ChemTreeNode::new(
+                quantity,
+                chemical,
+                reagents
+            );
+
+            branches.push(reagent_node);
         }
 
-        all_branches
+        branches
     }
 }
 
@@ -150,7 +143,7 @@ impl ChemTree {
 pub struct ChemTreeNode{
     chemical: Chemical,
     quantity: f32,
-    reagents: Box<Option<Vec<Vec<ChemTreeNode>>>>
+    reagents: Box<Option<Vec<ChemTreeNode>>>
 }
 
 impl ChemTreeNode {
@@ -158,11 +151,11 @@ impl ChemTreeNode {
         self.chemical.get_id()
     }
     
-    fn push_root_branches(&mut self, branches: Vec<Vec<ChemTreeNode>>){
+    fn push_root_branches(&mut self, branches: Vec<ChemTreeNode>){
         self.reagents = Box::new(Some(branches));
     }
 
-    fn get_reagents(&self) -> &Option<Vec<Vec<ChemTreeNode>>>{
+    fn get_reagents(&self) -> &Option<Vec<ChemTreeNode>>{
         &self.reagents
     }
 
@@ -181,14 +174,10 @@ impl ChemTreeNode {
             Chemical::Compound(compound) => {
 
                 let mut branch_strings = Vec::new();
-                for reaction in self.get_reagents(){
-
-                    for reagent in reaction {
-                        for node in reagent {
-                            branch_strings.push(node.print_branch(layer + 1));
-                        }
+                for vec in self.get_reagents(){
+                    for node in vec{
+                        branch_strings.push(node.print_branch(layer + 1));
                     }
-                    
                 }
 
                 let mut pastable_string = String::new();
@@ -198,7 +187,7 @@ impl ChemTreeNode {
                 for s in branch_strings{
                     match s.0{
                         Chemical::Compound(_compound) => {
-                            compounds = format!("{} {}", compounds, s.1.as_str());
+                            compounds = format!("{}\n{}", compounds, s.1.as_str());
                         }
                         Chemical::Base(_base) => {
                             pastable_string.push_str(s.1.as_str());
@@ -211,7 +200,7 @@ impl ChemTreeNode {
 
                 let mut branch = String::new();
                 if !pastable_string.is_empty(){
-                    branch = format!("{branch}\n{tab}\t{pastable_string}");
+                    branch = format!("\n{tab}\t{pastable_string}");
                 }
                 if !ingredients.is_empty(){
                     branch = format!("{branch}\n{tab}\t{ingredients}");
@@ -226,10 +215,10 @@ impl ChemTreeNode {
 
                 let recipe = match temp_val {
                     Some(temp) => {
-                        format!("{} (@{}K)\n{tab}{}\n{tab}\n", compound_value, temp, branch)
+                        format!("{} (@{}K)\n{tab}[\n{}\n{tab}]\n", compound_value, temp, branch)
                     }
                     None => {
-                    format!("{}\n{tab}{}\n{tab}\n", compound_value, branch)
+                    format!("{}\n{tab}[\n{}\n{tab}]\n", compound_value, branch)
                     }
                 };
 
@@ -237,7 +226,7 @@ impl ChemTreeNode {
                 result = (&self.chemical, recipe);
             }
             Chemical::Base(base) => {
-                result = (&self.chemical, format!("{}-{} ", self.quantity, base.get_id()));
+                result = (&self.chemical, format!("{}={};", base.get_id(), self.quantity));
             }
             Chemical::Ingredient(ingredient) => {
                 result = (&self.chemical, format!("[{} {}]", self.quantity, ingredient.get_id()));
@@ -250,7 +239,7 @@ impl ChemTreeNode {
 }
 
 impl ChemTreeNode {
-    pub fn new(quantity: f32, chemical: Chemical, reagents: Option<Vec<Vec<ChemTreeNode>>>) -> ChemTreeNode{
+    pub fn new(quantity: f32, chemical: Chemical, reagents: Option<Vec<ChemTreeNode>>) -> ChemTreeNode{
         ChemTreeNode { chemical, quantity,  reagents: Box::new(reagents) }
     }
 }
