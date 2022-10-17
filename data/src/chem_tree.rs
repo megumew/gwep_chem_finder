@@ -31,17 +31,19 @@ impl ChemTree {
         let mut ingredients = String::new();
         
         for node in self.root.get_reagents() {
-            for reagent in node{
-                let result = reagent.print_branch(0);
-                match result.0{
-                    Chemical::Compound(_compound) => {
-                        compounds = format!("{}\n{}", compounds, result.1.as_str());
-                    }
-                    Chemical::Base(_base) => {
-                        pastable_string.push_str(result.1.as_str());
-                    }
-                    Chemical::Ingredient(_ingredient) => {
-                        ingredients.push_str(result.1.as_str());
+            for recipe in node{
+                for reagent in recipe {
+                    let result = reagent.print_branch(0);
+                    match result.0{
+                        Chemical::Compound(_compound) => {
+                            compounds = format!("{}\n{}", compounds, result.1.as_str());
+                        }
+                        Chemical::Base(_base) => {
+                            pastable_string.push_str(result.1.as_str());
+                        }
+                        Chemical::Ingredient(_ingredient) => {
+                            ingredients.push_str(result.1.as_str());
+                        }
                     }
                 }
             }
@@ -100,42 +102,42 @@ impl ChemTree {
         self.root.push_root_branches(branches);
     }
 
-    fn populate_branches(chem: Chemical, compound_map: &HashMap<String, Reaction>) -> Vec<ChemTreeNode>{
+    fn populate_branches(chem: Chemical, compound_map: &HashMap<String, Reaction>) -> Vec<Vec<ChemTreeNode>>{
         let id = chem.get_id();
-        let raw_reagents = compound_map.get(&id).unwrap().get_reagents_of_recipe(0);
-        let mut branches: Vec<ChemTreeNode> = Vec::new();
+        let all_recipes = compound_map.get(&id).unwrap().get_all_recipes();
+        let mut top_branch: Vec<Vec<ChemTreeNode>> = Vec::new();
         
+        for raw_reagents in all_recipes {
+            let mut branches: Vec<ChemTreeNode> = Vec::new();
+            for reagent in raw_reagents{
+                let mut reagents: Option<Vec<Vec<ChemTreeNode>>> = None;
+                let chemical: Chemical;
+                let name = &reagent.name;
+                let quantity = reagent.quantity as f32;
 
-        for reagent in raw_reagents{
-            let mut reagents: Option<Vec<ChemTreeNode>> = None;
-            let chemical: Chemical;
-            let name = &reagent.name;
-            let mut quantity = reagent.quantity as f32;
-
-            if compound_map.contains_key(name){
-                chemical = Chemical::Compound(compound_map.get(name).unwrap().clone());
-                /* The following line causes a Stack overflow using a Compound's "name" as a key for the compound_map instead of "internal_name". Whoever made both a non-unique "id" field and a non-unique "name" field deserves eternal suffering */
-                reagents = Some(Self::populate_branches(chemical.clone(), &compound_map));
-                quantity = match &chemical {
-                    Chemical::Compound(c) => c.result_amount(0),
-                    _ => panic!("how???"),
+                if compound_map.contains_key(name){
+                    let reaction = compound_map.get(name).unwrap().clone();
+                    // Refactor all Reagent "quantity"s later to get the smallest ratio between Reagents to get final Chemical
+                    // quantity = reaction.get_specific_recipe_result_amount(0);
+                    chemical = Chemical::Compound(reaction);
+                    reagents = Some(Self::populate_branches(chemical.clone(), &compound_map));
+                }else if BASES_MAP.contains_key(&name.as_str()){
+                    chemical = Chemical::Base(BASES_MAP.get(&name.as_str()).unwrap().clone());
+                }else{
+                    chemical = Chemical::Ingredient(Ingredient::new(name.clone()));
                 }
-            }else if BASES_MAP.contains_key(&name.as_str()){
-                chemical = Chemical::Base(BASES_MAP.get(&name.as_str()).unwrap().clone());
-            }else{
-                chemical = Chemical::Ingredient(Ingredient::new(name.clone()));
+
+                let reagent_node = ChemTreeNode::new(
+                    quantity,
+                    chemical,
+                    reagents
+                );
+
+                branches.push(reagent_node);
             }
-
-            let reagent_node = ChemTreeNode::new(
-                quantity,
-                chemical,
-                reagents
-            );
-
-            branches.push(reagent_node);
+            top_branch.push(branches);
         }
-
-        branches
+        top_branch
     }
 }
 
@@ -143,7 +145,7 @@ impl ChemTree {
 pub struct ChemTreeNode{
     chemical: Chemical,
     quantity: f32,
-    reagents: Box<Option<Vec<ChemTreeNode>>>
+    reagents: Box<Option<Vec<Vec<ChemTreeNode>>>>
 }
 
 impl ChemTreeNode {
@@ -151,11 +153,11 @@ impl ChemTreeNode {
         self.chemical.get_id()
     }
     
-    fn push_root_branches(&mut self, branches: Vec<ChemTreeNode>){
+    fn push_root_branches(&mut self, branches: Vec<Vec<ChemTreeNode>>){
         self.reagents = Box::new(Some(branches));
     }
 
-    fn get_reagents(&self) -> &Option<Vec<ChemTreeNode>>{
+    fn get_reagents(&self) -> &Option<Vec<Vec<ChemTreeNode>>>{
         &self.reagents
     }
 
@@ -174,8 +176,9 @@ impl ChemTreeNode {
             Chemical::Compound(compound) => {
 
                 let mut branch_strings = Vec::new();
-                for vec in self.get_reagents(){
-                    for node in vec{
+                for top_branch in self.get_reagents(){
+                    let recipe = &top_branch[0]; // Moved Hardcoded use of 1st Recipe here
+                    for node in recipe{
                         branch_strings.push(node.print_branch(layer + 1));
                     }
                 }
@@ -239,7 +242,7 @@ impl ChemTreeNode {
 }
 
 impl ChemTreeNode {
-    pub fn new(quantity: f32, chemical: Chemical, reagents: Option<Vec<ChemTreeNode>>) -> ChemTreeNode{
+    pub fn new(quantity: f32, chemical: Chemical, reagents: Option<Vec<Vec<ChemTreeNode>>>) -> ChemTreeNode{
         ChemTreeNode { chemical, quantity,  reagents: Box::new(reagents) }
     }
 }
