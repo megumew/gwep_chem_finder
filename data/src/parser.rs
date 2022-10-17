@@ -35,14 +35,16 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
     for pair in pairs {
         let mut internal_name: String = String::new();
         let mut name: String = String::new();
-        let mut id: String = String::new();
         let mut result: String = String::new();
         let mut mix_phrase: String = String::new();
-        let mut raw_reagents: Vec<RawReagent> = Vec::new();
-        let mut result_amount: f32 = 0.0;
         let mut instant: bool = false;
         let mut required_temperature: Option<f32> = None;
         let mut hidden: bool = false;
+
+        let mut id: String = String::new();
+        let mut raw_reagents: Vec<RawReagent> = Vec::new();
+        let mut result_amount: f32 = 0.0;
+
 
         for line in pair.into_inner() {
             match line.as_rule() {
@@ -156,24 +158,21 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Compound> {
                 _ => println!("{:?}", line.as_rule()),
             }
         }
+        let reaction = Reaction::new(id, raw_reagents, Vec::new(), result_amount);
+
         if name.is_empty() && result.is_empty(){
             let old_comp = compounds.pop().unwrap();
-            let new_comp = old_comp.add_recipe(raw_reagents);
+            let new_comp = old_comp.add_reaction(reaction);
             compounds.push(new_comp);
         }else{
             compounds.push(Compound::new(
                 internal_name,
                 name,
-                id,
                 result,
+                vec![reaction],
                 mix_phrase,
-                raw_reagents,
-                Vec::new(),
-                None,
-                None,
-                result_amount,
-                instant,
                 required_temperature,
+                instant,
                 hidden,
             ))
         }

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io;
 
 use data::chem_tree::{ChemTree, ChemTreeNode};
 use data::chemicals::*;
@@ -34,7 +35,7 @@ fn main() {
         println!("There are {} compounds.", compounds.len());
 
         let data = Data {
-            compounds: compounds,
+            compounds,
         };
 
         serialize(&data);
@@ -50,7 +51,7 @@ fn main() {
     // registers all possible results with their respective ID
     for c in &compounds{
         if !c.get_result().is_empty(){
-            result_map.entry(c.get_result()).or_default().push(c.get_id()); 
+            result_map.entry(c.get_result()).or_default().push(c.get_internal_name()); 
         }
     }
 
@@ -58,32 +59,40 @@ fn main() {
         println!("{:?}", r);
     }
 
-    for c in compounds {        
-        compound_map.insert(c.get_id(), c);
-
+    for c in &compounds {
+        compound_map.insert(c.get_internal_name(), c.clone());
     }
-
-    
-
-    let compounds = deserialize();
 
     let mut compound_trees:Box<HashMap<String, ChemTree>> = Box::new(HashMap::with_capacity(compounds.len()));
 
     for c in compounds{
-        let id = c.get_id();
-        let node = ChemTreeNode::new(c.get_result_amount(), Chemical::Compound(c), None);
+        let name = c.get_internal_name();
+        let node = ChemTreeNode::new(c.get_specific_reaction_result_amount(0), Chemical::Compound(c), None);
         //println!("{}", node.get_id());
         let mut chem_tree = ChemTree::new(node);
-        chem_tree.populate(&compound_map);
-        compound_trees.insert(id, chem_tree);
+        chem_tree.populate(&compound_map); //issue here
+        compound_trees.insert(name, chem_tree);
     }
 
-    // compound_trees.get("cleaner").unwrap().print_dispenser_format();
-    // compound_trees.get("capulettium_plus").unwrap().print_dispenser_format();
-    // compound_trees.get("phenol").unwrap().print_dispenser_format();
+    // Command Line Interface for looking up Compounds
+    // loop {
+    //     println!("Enter your input, or type 'quit' to exit");
+    //     let mut user_input = String::new();
+    //     match io::stdin().read_line(&mut user_input) {
+    //         Ok(_) =>  {
+    //             if user_input.trim().to_lowercase() == "quit" || user_input.trim().to_lowercase() == "'quit'" {
+    //                 break
+    //             }
+    //         },
+    //         Err(_) => println!("Error"),
+    //     }
+    //     let response = compound_trees.get(&user_input.trim().to_lowercase());
 
-    // for c in compound_trees.iter(){
-    //     c.1.print_dispenser_format();
+    //     match response {
+    //         Some(x) =>  { x.print_dispenser_format() },
+    //         None => { 
+    //             println!("{} is not a valid Compound!", user_input.trim());
+    //         }
+    //     }
     // }
-
 }

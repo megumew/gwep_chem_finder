@@ -102,19 +102,24 @@ impl ChemTree {
 
     fn populate_branches(chem: Chemical, compound_map: &HashMap<String, Compound>) -> Vec<ChemTreeNode>{
         let id = chem.get_id();
-        let raw_reagents = compound_map.get(&id).unwrap().get_reagents();
+        let raw_reagents = compound_map.get(&id).unwrap().get_reagents_of_reaction(0);
         let mut branches: Vec<ChemTreeNode> = Vec::new();
         
 
         for reagent in raw_reagents{
             let mut reagents: Option<Vec<ChemTreeNode>> = None;
-                        let chemical: Chemical;
+            let chemical: Chemical;
             let name = &reagent.name;
-            let quantity = reagent.quantity;
+            let mut quantity = reagent.quantity as f32;
 
             if compound_map.contains_key(name){
                 chemical = Chemical::Compound(compound_map.get(name).unwrap().clone());
+                /* The following line causes a Stack overflow using a Compound's "name" as a key for the compound_map instead of "internal_name". Whoever made both a non-unique "id" field and a non-unique "name" field deserves eternal suffering */
                 reagents = Some(Self::populate_branches(chemical.clone(), &compound_map));
+                quantity = match &chemical {
+                    Chemical::Compound(c) => c.result_amount(0),
+                    _ => panic!("how???"),
+                }
             }else if BASES_MAP.contains_key(&name.as_str()){
                 chemical = Chemical::Base(BASES_MAP.get(&name.as_str()).unwrap().clone());
             }else{
@@ -122,7 +127,7 @@ impl ChemTree {
             }
 
             let reagent_node = ChemTreeNode::new(
-                quantity as f32,
+                quantity,
                 chemical,
                 reagents
             );
@@ -204,7 +209,7 @@ impl ChemTreeNode {
                     branch = format!("{branch}\n{tab}{compounds}");
                 }
 
-                let compound_value = format!("{tab}{} {}", self.quantity, compound.get_id().to_uppercase());
+                let compound_value = format!("{tab}{} {}", self.quantity, compound.get_internal_name().to_uppercase());
 
                 let temp_val = compound.get_required_temp();
 
