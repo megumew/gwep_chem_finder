@@ -8,4 +8,4 @@ The program updates the Chemistry-Recipes.dm script from the Goonstation repo, p
 
 ## Goal of the program
 
-This program aims to eventually provide a GUI experience to make creating perfect beakers simple by creating optimized chemical recipes and presenting them to the user in copy/pastable forms where possible and listing all other non-base reagents. 
+This program aims to eventually provide a GUI experience to make creating perfect beakers simple by creating optimized chemical recipes.
