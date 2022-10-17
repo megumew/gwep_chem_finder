@@ -30,7 +30,7 @@ pub fn parse(path: String) -> Vec<Reaction> {
 }
 
 fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
-    let mut compounds: Vec<Reaction> = Vec::new();
+    let mut reactions: Vec<Reaction> = Vec::new();
 
     for pair in pairs {
         let mut internal_name: String = String::new();
@@ -161,11 +161,11 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
         let reaction = Recipe::new(id, raw_reagents, Vec::new(), result_amount);
 
         if name.is_empty() && result.is_empty(){
-            let old_comp = compounds.pop().unwrap();
+            let old_comp = reactions.pop().unwrap();
             let new_comp = old_comp.add_recipe(reaction);
-            compounds.push(new_comp);
+            reactions.push(new_comp);
         }else{
-            compounds.push(Reaction::new(
+            reactions.push(Reaction::new(
                 internal_name,
                 name,
                 result,
@@ -178,5 +178,5 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
         }
         
     }
-    compounds
+    reactions
 }
