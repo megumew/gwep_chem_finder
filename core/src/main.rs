@@ -70,7 +70,7 @@ fn main() {
         let node = ChemTreeNode::new(c.get_specific_reaction_result_amount(0), Chemical::Compound(c), None);
         //println!("{}", node.get_id());
         let mut chem_tree = ChemTree::new(node);
-        chem_tree.populate(&compound_map); //issue here
+        chem_tree.populate(&compound_map);
         compound_trees.insert(name, chem_tree);
     }
 
