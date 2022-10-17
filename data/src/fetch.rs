@@ -15,6 +15,7 @@ pub fn update() -> (String, bool) {
 
     let git_file: String = match download_script() {
         Ok(s) => s,
+        // Add more useful error checking
         Err(e) => {
             eprintln!("Error updating... :{}", e);
             if cur_path.exists() {

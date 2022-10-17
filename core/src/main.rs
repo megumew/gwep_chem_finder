@@ -13,12 +13,7 @@ extern crate pest_derive;
 fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available Bases: {:?}", BASES);
-
-    // for base in &BASES{
-    //     println!("{}", base.get_id());
-    // }
-
-    // Find a way to track if the script exists
+    
     let update_result = update();
 
     let updated;
