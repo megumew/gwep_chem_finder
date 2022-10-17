@@ -263,7 +263,7 @@ impl Reaction {
         &self.recipes[u].raw_reagents
     }
 
-    pub fn get_all_reagents(&self) -> Vec<&Vec<RawReagent>> {
+    pub fn get_all_recipes(&self) -> Vec<&Vec<RawReagent>> {
         let mut vec = Vec::new();
 
         for i in &self.recipes {

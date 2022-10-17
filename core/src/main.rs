@@ -26,49 +26,44 @@ fn main() {
 
     // Consider adding a force update bool based off launch parameters or if an error occurs
     if updated || !data_exists() {
-        let compounds = parser::parse(path);
+        let reactions = parser::parse(path);
 
-        println!("There are {} compounds.", compounds.len());
+        println!("There are {} compounds.", reactions.len());
 
         let data = Data {
-            compounds,
+            compounds: reactions,
         };
 
         serialize(&data);
     }
 
-    let compounds = deserialize();
+    let reactions = deserialize();
 
     //This is a map of all the rection names
-    let mut compound_map: HashMap<String, Reaction> = HashMap::with_capacity(compounds.len());
-    let mut result_map: HashMap<String, Vec<String>> = HashMap::with_capacity(compounds.len());
+    let mut reaction_map: HashMap<String, Reaction> = HashMap::with_capacity(reactions.len());
+    let mut result_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
 
     // registers all possible results with their respective internal names
-    for c in &compounds{
-        if !c.get_result().is_empty(){
-            result_map.entry(c.get_result()).or_default().push(c.get_internal_name()); 
+    for reaction in &reactions{
+        if !reaction.get_result().is_empty(){
+            result_map.entry(reaction.get_result()).or_default().push(reaction.get_internal_name()); 
         }
     }
 
-    for r in result_map{
-        println!("{:?}", r);
+    for reaction in &reactions {
+        reaction_map.insert(reaction.get_internal_name(), reaction.clone());
     }
 
-    for c in &compounds {
-        compound_map.insert(c.get_internal_name(), c.clone());
-    }
+    let mut compound_trees:Box<HashMap<String, ChemTree>> = Box::new(HashMap::with_capacity(reactions.len()));
 
-    let mut compound_trees:Box<HashMap<String, ChemTree>> = Box::new(HashMap::with_capacity(compounds.len()));
-
-    for c in compounds{
-        let name = c.get_internal_name();
-        let node = ChemTreeNode::new(c.get_specific_recipe_result_amount(0), Chemical::Compound(c), None);
+    for reaction in reactions{
+        let name = reaction.get_internal_name();
+        let node = ChemTreeNode::new(reaction.get_specific_recipe_result_amount(0), Chemical::Compound(reaction), None);
         //println!("{}", node.get_id());
         let mut chem_tree = ChemTree::new(node);
-        chem_tree.populate(&compound_map);
+        chem_tree.populate(&reaction_map);
         compound_trees.insert(name, chem_tree);
     }
-
 
     let args: Vec<String> = env::args().collect();
 
