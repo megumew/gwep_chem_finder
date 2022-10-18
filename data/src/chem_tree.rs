@@ -30,7 +30,7 @@ impl ChemTree {
                     println!("----\t{}\t----", self.root.get_id().to_uppercase());
                     println!("\tRECIPE #{}\n", count);
                     count += 1;
-                }else{
+                } else {
                     println!("----    {}    ----\n", self.root.get_id().to_uppercase());
                 }
 
@@ -62,18 +62,18 @@ impl ChemTree {
                     }
                     None => {}
                 }
-        
+
                 if !compounds.is_empty() || !ingredients.is_empty() {
                     println!("# Non-base Reagents #");
                     println!("+++++++++++++++++++++++++++++++++++++");
-        
+
                     if !compounds.is_empty() {
                         println!("_____________________________________");
                         println!("Compounds");
                         println!("-------------------------------------");
                         println!("{}", compounds);
                     }
-        
+
                     if !ingredients.is_empty() {
                         println!("___________________________________");
                         println!("Ingredients");
@@ -82,7 +82,7 @@ impl ChemTree {
                     }
                     println!("+++++++++++++++++++++++++++++++++++++\n");
                 }
-        
+
                 if !bases.is_empty() {
                     println!("_____________________________________");
                     println!("Base Reagents");
@@ -90,12 +90,12 @@ impl ChemTree {
                     println!("{}", bases);
                     println!("-------------------------------------");
                 }
-        
-                println!("////////////////////////////////////////////////////////////////////////\n");
 
+                println!(
+                    "////////////////////////////////////////////////////////////////////////\n"
+                );
             }
         }
-
     }
 
     pub fn populate(&mut self, compound_map: &HashMap<String, Reaction>) {
@@ -240,7 +240,11 @@ impl ChemTreeNode {
             Chemical::Base(base) => {
                 result = (
                     &self.chemical,
-                    format!("({} {}) ", self.quantity, base.get_id().to_ascii_uppercase()),
+                    format!(
+                        "({} {}) ",
+                        self.quantity,
+                        base.get_id().to_ascii_uppercase()
+                    ),
                 );
             }
             Chemical::Ingredient(ingredient) => {
