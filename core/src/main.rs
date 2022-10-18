@@ -104,8 +104,8 @@ fn main() {
                 None => {
                     let response = result_map.get(&user_input.trim().to_lowercase());
                     match response {
-                        Some(x) => {
-                            println!("Found")
+                        Some(_) => {
+                            println!("Found these rections with the result: {:?}", response);
                         }
                         None => {
                             println!("{} is not a valid Compound!", user_input.trim());
