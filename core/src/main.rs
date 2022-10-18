@@ -20,6 +20,7 @@ struct Args {
     ///Forces the program to update
     #[arg(short, long)]
     update: bool,
+    ///Runs the program in CLI mode
     #[arg(short, long)]
     cli: bool,
 }
