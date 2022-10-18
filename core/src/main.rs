@@ -4,6 +4,7 @@ use std::io;
 
 use data::chem_tree::{ChemTree, ChemTreeNode};
 use data::chemicals::*;
+use data::search_engine::*;
 use data::fetch::update;
 use data::local::{data_exists, deserialize, serialize};
 use data::parser;
@@ -42,10 +43,11 @@ fn main() {
     //This is a map of all the rection names
     let mut reaction_map: HashMap<String, Reaction> = HashMap::with_capacity(reactions.len());
     let mut result_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
-
+    let mut search_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
     // registers all possible results with their respective internal names
     for reaction in &reactions {
         if !reaction.get_result().is_empty() {
+            search_map = generate_search_keys(search_map, reaction.clone());
             result_map
                 .entry(reaction.get_result())
                 .or_default()
@@ -98,7 +100,7 @@ fn main() {
             let clean = clean_input(user_input.trim().to_string());
 
             //check if result and reaction are same to prevent ignoring alternate recipes seperately defined
-            match result_map.get(&clean) {
+            match search_map.get(&clean) {
                 Some(x) => {
                     if x.len() > 1 {
                         let selection = collision_select(x);
@@ -118,7 +120,7 @@ fn main() {
                     match direct {
                         Some(x) => x.print_dispenser_format(),
                         None => {
-                            let fuzzy = fuzzy_search(&clean, &result_map);
+                            let fuzzy = fuzzy_search(&clean, &search_map);
                             let search_result = compound_trees.get(&fuzzy);
                             match search_result {
                                 Some(x) => x.print_dispenser_format(),
