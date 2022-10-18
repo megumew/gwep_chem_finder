@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::env;
 use std::io;
 
+use clap::Parser;
+
 use data::chem_tree::{ChemTree, ChemTreeNode};
 use data::chemicals::*;
 use data::search_engine::*;
@@ -11,9 +13,22 @@ use data::parser;
 extern crate pest;
 extern crate pest_derive;
 
+/// Gwep Chem Finder
+#[derive(clap::Parser)]
+#[command()]
+struct Args {
+    ///Forces the program to update
+    #[arg(short, long)]
+    update: bool,
+    #[arg(short, long)]
+    cli: bool,
+}
+
 fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available Bases: {:?}", BASES);
+
+    let args = Args::parse();
 
     let update_result = update();
 
@@ -26,7 +41,7 @@ fn main() {
     };
 
     // Consider adding a force update bool based off launch parameters or if an error occurs
-    if updated || !data_exists() {
+    if updated || !data_exists() || args.update {
         let reactions = parser::parse(path);
 
         println!("There are {} compounds.", reactions.len());
@@ -55,11 +70,11 @@ fn main() {
         }
     }
 
-    for r in &result_map {
-        if r.1.len() > 1 {
-            println!("{:?}", r);
-        }
-    }
+    // for r in &result_map {
+    //     if r.1.len() > 1 {
+    //         println!("{:?}", r);
+    //     }
+    // }
 
     for reaction in &reactions {
         reaction_map.insert(reaction.get_internal_name(), reaction.clone());
@@ -82,8 +97,7 @@ fn main() {
     }
 
     // Command Line Interface for looking up Compounds
-    let args: Vec<String> = env::args().collect();
-    if args.len() > 1 && args[1] == "cli" {
+    if args.cli {
         loop {
             println!("Enter your input, or type 'quit' to exit");
             let mut user_input = String::new();

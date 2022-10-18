@@ -9,3 +9,4 @@ edition = "2021"
 data = {path = "../data"}
 pest = "2.3.0"
 pest_derive = "2.3.0"
+clap = {version = "4.0.17", features = ["derive"]}
