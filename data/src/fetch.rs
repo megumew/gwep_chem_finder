@@ -46,9 +46,7 @@ fn download_script() -> Result<String, reqwest::Error> {
     let git_call = reqwest::blocking::get(LINK)?.text();
 
     let git_file = match git_call {
-        Ok(s) => {
-            s
-        }
+        Ok(s) => s,
         Err(e) => return Err(e),
     };
     return Ok(git_file);

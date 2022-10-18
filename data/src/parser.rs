@@ -45,13 +45,12 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
         let mut raw_reagents: Vec<RawReagent> = Vec::new();
         let mut result_amount: f32 = 0.0;
 
-
         for line in pair.into_inner() {
             match line.as_rule() {
                 Rule::identifier => {
                     internal_name = String::from(line.as_str());
                     // Used to track if this may be a alternate recipe
-                },
+                }
                 Rule::field => {
                     let mut pair = line.into_inner();
                     let field = pair.next().unwrap();
@@ -116,37 +115,35 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
                         "result_amount" => result_amount = value.as_str().parse::<f32>().unwrap(),
                         "instant" => {
                             let i_val = value.as_str().parse::<i8>().unwrap();
-                            match i_val{
+                            match i_val {
                                 0 => instant = false,
                                 1 => instant = true,
-                                _ => panic!("Unexpected value for instant!")
+                                _ => panic!("Unexpected value for instant!"),
                             }
                         }
                         "required_temperature" => {
-                            let mut temp_data = value.into_inner();        
+                            let mut temp_data = value.into_inner();
                             let mut temp_val = temp_data.next().unwrap();
-                            match temp_val.as_rule(){
+                            match temp_val.as_rule() {
                                 Rule::number => {
                                     let celsius_val = temp_val.as_str().parse::<i8>().unwrap();
                                     temp_val = temp_data.next().unwrap();
-                                    let offset =temp_val.as_str().parse::<f32>().unwrap();
+                                    let offset = temp_val.as_str().parse::<f32>().unwrap();
                                     let mut temp_result = offset;
                                     match celsius_val {
                                         0 => temp_result += 273.15,
                                         20 => temp_result += 293.15,
-                                        _ => panic!("Temperature macro unexpected!")
+                                        _ => panic!("Temperature macro unexpected!"),
                                     }
-                                    
+
                                     required_temperature = Some(temp_result);
-
-
                                 }
                                 Rule::num_val => {
-                                    required_temperature = Some(temp_val.as_str().parse::<f32>().unwrap())
+                                    required_temperature =
+                                        Some(temp_val.as_str().parse::<f32>().unwrap())
                                 }
-                                _ => panic!("Parsed incorrect value from temperature!")
-                            }                 
-                            
+                                _ => panic!("Parsed incorrect value from temperature!"),
+                            }
                         }
                         "hidden" => hidden = true,
                         _ => {}
@@ -160,11 +157,11 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
         }
         let recipe = Recipe::new(id, raw_reagents, Vec::new(), result_amount);
 
-        if name.is_empty() && result.is_empty(){
+        if name.is_empty() && result.is_empty() {
             let old_comp = reactions.pop().unwrap();
             let new_comp = old_comp.add_recipe(recipe);
             reactions.push(new_comp);
-        }else{
+        } else {
             reactions.push(Reaction::new(
                 internal_name,
                 name,
@@ -176,7 +173,6 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
                 hidden,
             ))
         }
-        
     }
     reactions
 }
