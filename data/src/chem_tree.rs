@@ -31,7 +31,7 @@ impl ChemTree {
                     println!("\tRECIPE #{}\n", count);
                     count += 1;
                 }else{
-                    println!("----\t{}\t----\n", self.root.get_id().to_uppercase());
+                    println!("----    {}    ----\n", self.root.get_id().to_uppercase());
                 }
 
                 let mut bases = String::new();
@@ -69,14 +69,14 @@ impl ChemTree {
         
                     if !compounds.is_empty() {
                         println!("_____________________________________");
-                        println!("COMPOUNDS");
+                        println!("Compounds");
                         println!("-------------------------------------");
                         println!("{}", compounds);
                     }
         
                     if !ingredients.is_empty() {
                         println!("___________________________________");
-                        println!("ingredients");
+                        println!("Ingredients");
                         println!("-----------------------------------");
                         println!("{}", ingredients);
                     }
@@ -186,7 +186,7 @@ impl ChemTreeNode {
                     }
                 }
 
-                let mut pastable_string = String::new();
+                let mut bases = String::new();
                 let mut compounds = String::new();
                 let mut ingredients = String::new();
 
@@ -196,7 +196,7 @@ impl ChemTreeNode {
                             compounds = format!("{}\n{}", compounds, s.1.as_str());
                         }
                         Chemical::Base(_base) => {
-                            pastable_string.push_str(s.1.as_str());
+                            bases.push_str(s.1.as_str());
                         }
                         Chemical::Ingredient(_ingredient) => {
                             ingredients.push_str(s.1.as_str());
@@ -205,20 +205,20 @@ impl ChemTreeNode {
                 }
 
                 let mut branch = String::new();
-                if !pastable_string.is_empty() {
-                    branch = format!("\n{tab}\t{pastable_string}");
+                if !bases.is_empty() {
+                    branch = format!("\n{tab}\t{}", bases);
                 }
                 if !ingredients.is_empty() {
-                    branch = format!("{branch}\n{tab}\t{ingredients}");
+                    branch = format!("{branch}\n{tab}\t{}", ingredients);
                 }
                 if !compounds.is_empty() {
-                    branch = format!("{branch}\n{tab}{compounds}");
+                    branch = format!("{branch}\n{tab}{}", compounds);
                 }
 
                 let compound_value = format!(
-                    "{tab}{} {}",
+                    "{tab}[{} {}]",
                     self.quantity,
-                    compound.get_internal_name().to_uppercase()
+                    compound.get_internal_name().to_ascii_uppercase()
                 );
 
                 let temp_val = compound.get_required_temp();
@@ -226,12 +226,12 @@ impl ChemTreeNode {
                 let recipe = match temp_val {
                     Some(temp) => {
                         format!(
-                            "{} (@{}K)\n{tab}[\n{}\n{tab}]\n",
+                            "{} (@{}K)\n{tab}{{\n{}\n{tab}}}\n",
                             compound_value, temp, branch
                         )
                     }
                     None => {
-                        format!("{}\n{tab}[\n{}\n{tab}]\n", compound_value, branch)
+                        format!("{}\n{tab}{{\n{}\n{tab}}}\n", compound_value, branch)
                     }
                 };
 
@@ -246,7 +246,7 @@ impl ChemTreeNode {
             Chemical::Ingredient(ingredient) => {
                 result = (
                     &self.chemical,
-                    format!("[{} \"{}\"] ", self.quantity, ingredient.get_id()),
+                    format!("<{} \"{}\"> ", self.quantity, ingredient.get_id()),
                 );
             }
         }
