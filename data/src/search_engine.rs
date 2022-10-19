@@ -70,7 +70,6 @@ fn string_permutations(string: String) -> Vec<String> {
             if word == None {
                 return permmutations
             }
-            println!("{}", word.unwrap());
             permmutations.push(word.unwrap().to_string());
         }
     }
