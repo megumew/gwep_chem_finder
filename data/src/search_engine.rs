@@ -1,7 +1,16 @@
-use std::{collections::HashMap, io};
 use crate::chemicals::Reaction;
+use std::{collections::HashMap, io};
 
-pub fn generate_search_keys(mut map: HashMap<String, Vec<String>>, reaction: Reaction) -> HashMap<String, Vec<String>> {
+pub struct Maps {
+    pub reaction_map: HashMap<String, Reaction>,
+    pub result_map: HashMap<String, Vec<String>>,
+    pub search_map: HashMap<String, Vec<String>>,
+}
+
+pub fn generate_search_keys(
+    mut map: HashMap<String, Vec<String>>,
+    reaction: Reaction,
+) -> HashMap<String, Vec<String>> {
     let internal_name = reaction.get_internal_name();
     let result = reaction.get_result().to_lowercase();
     let name = reaction.get_name().to_lowercase();
@@ -17,24 +26,26 @@ pub fn generate_search_keys(mut map: HashMap<String, Vec<String>>, reaction: Rea
     map
 }
 
-fn insert_keyword(mut map: HashMap<String, Vec<String>>, word: String, internal_name: &String) -> HashMap<String, Vec<String>> {
+fn insert_keyword(
+    mut map: HashMap<String, Vec<String>>,
+    word: String,
+    internal_name: &String,
+) -> HashMap<String, Vec<String>> {
     for k in 0..word.len() {
         let chars = word.chars();
-        let string: String = chars.take(k+1).collect();
+        let string: String = chars.take(k + 1).collect();
         match map.get(&string) {
             Some(array) => {
                 if array.contains(internal_name) {
-                    continue
+                    continue;
                 } else {
-                    map
-                        .entry(string)
+                    map.entry(string)
                         .or_default()
                         .push(internal_name.to_string());
                 }
-            },
-            None =>  {
-                map
-                    .entry(string)
+            }
+            None => {
+                map.entry(string)
                     .or_default()
                     .push(internal_name.to_string());
             }
@@ -62,7 +73,7 @@ fn string_permutations(string: String) -> Vec<String> {
         loop {
             let word = only_words.next();
             if word == None {
-                return permmutations
+                return permmutations;
             }
             let word_to_string = word.unwrap().to_string();
             permmutations.push(word_to_string.clone());
@@ -72,7 +83,7 @@ fn string_permutations(string: String) -> Vec<String> {
             loop {
                 let next = clone.next();
                 if next == None {
-                   break
+                    break;
                 }
                 more_words.push_str(next.unwrap());
                 if &word_to_string != &next.unwrap() {
@@ -99,7 +110,7 @@ fn string_permutations(string: String) -> Vec<String> {
         loop {
             let word = no_underscores.next();
             if word == None {
-                return permmutations
+                return permmutations;
             }
             permmutations.push(word.unwrap().to_string());
         }
@@ -108,10 +119,10 @@ fn string_permutations(string: String) -> Vec<String> {
 }
 
 //Returns a string for the compound trees
-pub fn fuzzy_search(input: &String, data: &HashMap<String, Vec<String>>) -> String {
+pub fn fuzzy_search(input: &String, maps: &Maps) -> String {
     let mut best_score: (i32, String) = (i32::MAX, String::new());
-    for x in data {
-        let diff = score_diff(x.0, input);
+    for x in &maps.search_map {
+        let diff = score_diff(&x.0, input);
 
         if diff.0 == 0 {
             best_score = diff;
@@ -127,7 +138,7 @@ pub fn fuzzy_search(input: &String, data: &HashMap<String, Vec<String>>) -> Stri
         best_score.1, best_score.0
     );
 
-    let result = data.get(&best_score.1).unwrap();
+    let result = maps.search_map.get(&best_score.1).unwrap();
     if result.len() > 1 {
         best_score.1 = collision_select(result);
     } else {
