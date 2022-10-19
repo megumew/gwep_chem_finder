@@ -46,6 +46,51 @@ fn insert_keyword(mut map: HashMap<String, Vec<String>>, word: String, internal_
 fn string_permutations(string: String) -> Vec<String> {
     let mut permmutations: Vec<String> = Vec::new();
     permmutations.push(string.clone());
+    // Thankfully there are no instances of ["_" and "-" or " "] being in the same name
+    if string.clone().contains("-") || string.clone().contains(" ") {
+        // First, pushes all permutations using "-", "", " ", or "_" as fillers between words
+        permmutations.push(string.replace("-", ""));
+        permmutations.push(string.replace(" ", ""));
+        permmutations.push(string.replace(" ", "").replace("-", ""));
+        permmutations.push(string.replace(" ", "-"));
+        let only_spaces = string.replace("-", " ");
+        permmutations.push(only_spaces.clone());
+        // Uses the last part with " " between words to make accessing each individual word easier
+        let mut only_words = only_spaces.split_whitespace(); // split_whitespace works with multiple spaces in a row
+        only_words.next();
+        // Loop pushes each word individually [Very, High, Fructose, Corn, Syrup], and sets up for inner loop
+        loop {
+            let word = only_words.next();
+            if word == None {
+                return permmutations
+            }
+            let word_to_string = word.unwrap().to_string();
+            permmutations.push(word_to_string.clone());
+            let mut clone = only_words.clone();
+            let mut more_words: String = "".to_string();
+            // Inner loop gets all word order permutations, for example [Very Fructose, High Corn, Fructose Syrup]
+            loop {
+                let next = clone.next();
+                if next == None {
+                   break
+                }
+                more_words.push_str(next.unwrap());
+                if &word_to_string != &next.unwrap() {
+                    permmutations.push(format!("{}{}", &word_to_string, &next.unwrap()));
+                    permmutations.push(format!("{} {}", &word_to_string, &next.unwrap()));
+                    permmutations.push(format!("{}-{}", &word_to_string, &next.unwrap()));
+                    permmutations.push(format!("{}_{}", &word_to_string, &next.unwrap()));
+                }
+                if &word_to_string != &more_words {
+                    permmutations.push(more_words.clone());
+                    permmutations.push(format!("{}{}", &word_to_string, &more_words));
+                    permmutations.push(format!("{} {}", &word_to_string, &more_words));
+                    permmutations.push(format!("{}-{}", &word_to_string, &more_words));
+                    permmutations.push(format!("{}_{}", &word_to_string, &more_words));
+                }
+            }
+        }
+    }
     if string.clone().contains("_") {
         permmutations.push(string.replace("_", ""));
         permmutations.push(string.replace("_", " "));
@@ -53,20 +98,6 @@ fn string_permutations(string: String) -> Vec<String> {
         no_underscores.next(); // The first word is covered by other permutations
         loop {
             let word = no_underscores.next();
-            if word == None {
-                break
-            }
-            permmutations.push(word.unwrap().to_string());
-        }
-    }
-    if string.clone().contains(" ") {
-        permmutations.push(string.replace(" ", ""));
-        permmutations.push(string.replace(" ", "_"));
-        // Using `string.split_whitespace()` vs `string.split(" ") prevents potential issues with multiple spaces
-        let mut no_whitespace = string.split_whitespace();
-        no_whitespace.next(); // The first word is covered by other permutations
-        loop {
-            let word = no_whitespace.next();
             if word == None {
                 return permmutations
             }
@@ -112,6 +143,7 @@ fn score_diff(searched: &String, input: &String) -> (i32, String) {
         .chars()
         .map(|x| match x {
             '_' => ' ',
+            '-' => ' ',
             _ => x,
         })
         .collect();
@@ -120,6 +152,7 @@ fn score_diff(searched: &String, input: &String) -> (i32, String) {
         .chars()
         .map(|x| match x {
             '_' => ' ',
+            '-' => ' ',
             _ => x,
         })
         .collect();
