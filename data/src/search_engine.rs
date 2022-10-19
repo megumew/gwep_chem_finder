@@ -46,6 +46,50 @@ fn insert_keyword(mut map: HashMap<String, Vec<String>>, word: String, internal_
 fn string_permutations(string: String) -> Vec<String> {
     let mut permmutations: Vec<String> = Vec::new();
     permmutations.push(string.clone());
+    // Thankfully there are no instances of ["_" and "-" or " "] being in the same name
+    if string.clone().contains("-") && string.clone().contains(" ") {
+        permmutations.push(string.replace("-", ""));
+        permmutations.push(string.replace(" ", ""));
+        permmutations.push(string.replace(" ", "").replace("-", ""));
+        permmutations.push(string.replace(" ", "-"));
+        let only_spaces = string.replace("-", " ");
+        permmutations.push(only_spaces.clone());
+        let mut only_words = only_spaces.split_whitespace(); // split_whitespace works with multiple spaces in a row
+        only_words.next(); // The first word is covered by other permutations
+        loop {
+            let word = only_words.next();
+            if word == None {
+                return permmutations
+            }
+            permmutations.push(word.unwrap().to_string());
+        }
+    } else if string.clone().contains(" ") {
+        permmutations.push(string.replace(" ", ""));
+        permmutations.push(string.replace(" ", "_"));
+        permmutations.push(string.replace(" ", "-"));
+        let mut no_whitespace = string.split_whitespace();
+        no_whitespace.next(); // The first word is covered by other permutations
+        loop {
+            let word = no_whitespace.next();
+            if word == None {
+                return permmutations
+            }
+            permmutations.push(word.unwrap().to_string());
+        }
+    } else if string.clone().contains("-") {
+        permmutations.push(string.replace("-", ""));
+        permmutations.push(string.replace("-", "_"));
+        permmutations.push(string.replace("-", " "));
+        let mut no_hyphen = string.split("-");
+        no_hyphen.next(); // The first word is covered by other permutations
+        loop {
+            let word = no_hyphen.next();
+            if word == None {
+                return permmutations
+            }
+            permmutations.push(word.unwrap().to_string());
+        }
+    }
     if string.clone().contains("_") {
         permmutations.push(string.replace("_", ""));
         permmutations.push(string.replace("_", " "));
@@ -53,20 +97,6 @@ fn string_permutations(string: String) -> Vec<String> {
         no_underscores.next(); // The first word is covered by other permutations
         loop {
             let word = no_underscores.next();
-            if word == None {
-                break
-            }
-            permmutations.push(word.unwrap().to_string());
-        }
-    }
-    if string.clone().contains(" ") {
-        permmutations.push(string.replace(" ", ""));
-        permmutations.push(string.replace(" ", "_"));
-        // Using `string.split_whitespace()` vs `string.split(" ") prevents potential issues with multiple spaces
-        let mut no_whitespace = string.split_whitespace();
-        no_whitespace.next(); // The first word is covered by other permutations
-        loop {
-            let word = no_whitespace.next();
             if word == None {
                 return permmutations
             }
