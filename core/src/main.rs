@@ -5,10 +5,10 @@ use clap::Parser;
 
 use data::chem_tree::{ChemTree, ChemTreeNode};
 use data::chemicals::*;
-use data::search_engine::*;
 use data::fetch::update;
 use data::local::{data_exists, deserialize, serialize};
 use data::parser;
+use data::search_engine::*;
 extern crate pest;
 extern crate pest_derive;
 
@@ -55,7 +55,7 @@ fn main() {
 
     let reactions = deserialize();
 
-    //This is a map of all the rection names
+    //This is a map of all the reaction names
     let mut reaction_map: HashMap<String, Reaction> = HashMap::with_capacity(reactions.len());
     let mut result_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
     let mut search_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
@@ -80,6 +80,12 @@ fn main() {
         reaction_map.insert(reaction.get_internal_name(), reaction.clone());
     }
 
+    let maps = Maps {
+        reaction_map,
+        result_map,
+        search_map,
+    };
+
     let mut compound_trees: Box<HashMap<String, ChemTree>> =
         Box::new(HashMap::with_capacity(reactions.len()));
 
@@ -92,7 +98,7 @@ fn main() {
         );
         //println!("{}", node.get_id());
         let mut chem_tree = ChemTree::new(node);
-        chem_tree.populate(&reaction_map);
+        chem_tree.populate(&maps);
         compound_trees.insert(name, chem_tree);
     }
 
@@ -114,7 +120,7 @@ fn main() {
             let clean = clean_input(user_input.trim().to_string());
 
             //check if result and reaction are same to prevent ignoring alternate recipes seperately defined
-            match search_map.get(&clean) {
+            match maps.search_map.get(&clean) {
                 Some(x) => {
                     if x.len() > 1 {
                         let selection = collision_select(x);
@@ -134,7 +140,7 @@ fn main() {
                     match direct {
                         Some(x) => x.print_dispenser_format(),
                         None => {
-                            let fuzzy = fuzzy_search(&clean, &search_map);
+                            let fuzzy = fuzzy_search(&clean, &maps);
                             let search_result = compound_trees.get(&fuzzy);
                             match search_result {
                                 Some(x) => x.print_dispenser_format(),
@@ -147,4 +153,3 @@ fn main() {
         }
     }
 }
-
