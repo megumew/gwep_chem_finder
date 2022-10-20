@@ -4,3 +4,4 @@ pub mod fetch;
 pub mod local;
 pub mod parser;
 pub mod search_engine;
+pub mod initialize_maps;
