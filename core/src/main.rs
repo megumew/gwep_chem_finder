@@ -66,32 +66,57 @@ fn main() {
             }
             let clean = clean_input(user_input.trim().to_string());
 
-            //check if result and reaction are same to prevent ignoring alternate recipes seperately defined
-            match maps.search_map.get(&clean) {
-                Some(x) => {
-                    if x.len() > 1 {
-                        let selection = collision_select(x);
-                        compound_trees
-                            .get(&selection)
-                            .unwrap()
-                            .print_dispenser_format();
-                    } else {
-                        compound_trees
-                            .get(x.first().unwrap())
-                            .unwrap()
-                            .print_dispenser_format();
+            if clean.is_empty(){
+                println!("Please input a chemical to display or a command with '/'")
+            }
+            else if !clean.is_empty() && clean.chars().next().unwrap() == '/' {
+                let command = &clean[1..clean.len()];
+                let words = command.split_ascii_whitespace().collect::<Vec<&str>>();
+                match words.first(){
+                    Some(w) =>{
+                        match w.to_lowercase().as_str() {
+                            "h" | "help" => println!("Commands:\n/(r)equires - Displays all reactions required by given chem."),
+                            "r" | "requires" => {
+                                match words.get(1) {
+                                    Some(w) => println!("\"{}\" is required by TEST", w),
+                                    None => println!("This command requires an argument!")
+                                }
+        
+                            }
+                            _ => println!("Unkown command: {:?}", words)
+                        }
                     }
+                    None => println!("Missing command after /")
+                    
                 }
-                None => {
-                    let direct = compound_trees.get(&clean);
-                    match direct {
-                        Some(x) => x.print_dispenser_format(),
-                        None => {
-                            let fuzzy = fuzzy_search(&clean, &maps);
-                            let search_result = compound_trees.get(&fuzzy);
-                            match search_result {
-                                Some(x) => x.print_dispenser_format(),
-                                None => {}
+            } else {
+                //check if result and reaction are same to prevent ignoring alternate recipes seperately defined
+                match maps.search_map.get(&clean) {
+                    Some(x) => {
+                        if x.len() > 1 {
+                            let selection = collision_select(x);
+                            compound_trees
+                                .get(&selection)
+                                .unwrap()
+                                .print_dispenser_format();
+                        } else {
+                            compound_trees
+                                .get(x.first().unwrap())
+                                .unwrap()
+                                .print_dispenser_format();
+                        }
+                    }
+                    None => {
+                        let direct = compound_trees.get(&clean);
+                        match direct {
+                            Some(x) => x.print_dispenser_format(),
+                            None => {
+                                let fuzzy = fuzzy_search(&clean, &maps);
+                                let search_result = compound_trees.get(&fuzzy);
+                                match search_result {
+                                    Some(x) => x.print_dispenser_format(),
+                                    None => {}
+                                }
                             }
                         }
                     }
