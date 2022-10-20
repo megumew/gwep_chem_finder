@@ -77,7 +77,8 @@ fn string_permutations(string: String) -> Vec<String> {
             }
             let word_to_string = word.unwrap().to_string();
             permmutations.push(word_to_string.clone());
-            let mut clone = only_words.clone();
+            let space_clone = only_spaces.clone();
+            let mut clone = space_clone.split_whitespace();
             let mut more_words: String = "".to_string();
             // Inner loop gets all word order permutations, for example [Very Fructose, High Corn, Fructose Syrup]
             loop {
@@ -105,6 +106,7 @@ fn string_permutations(string: String) -> Vec<String> {
     if string.clone().contains("_") {
         permmutations.push(string.replace("_", ""));
         permmutations.push(string.replace("_", " "));
+        permmutations.push(string.replace("_", "-"));
         let mut no_underscores = string.split("_");
         no_underscores.next(); // The first word is covered by other permutations
         loop {

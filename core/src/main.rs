@@ -2,12 +2,11 @@ use std::collections::HashMap;
 use std::io;
 
 use clap::Parser;
-
-use data::chem_tree::{ChemTree, ChemTreeNode};
+use data::initialize_maps::initialize_compound_tree;
+use data::chem_tree::ChemTree;
 use data::chemicals::*;
 use data::fetch::update;
-use data::local::{data_exists, deserialize, serialize};
-use data::parser;
+use data::local::data_exists;
 use data::search_engine::*;
 extern crate pest;
 extern crate pest_derive;
@@ -33,74 +32,22 @@ fn main() {
     let update_result = update();
 
     let updated;
-    let path = match update_result {
+    let paths = match update_result {
         (s, b) => {
             updated = b;
-            s
+            Some(s)
         }
     };
-
-    // Consider adding a force update bool based off launch parameters or if an error occurs
-    if updated || !data_exists() || args.update {
-        let reactions = parser::parse(path);
-
-        println!("There are {} compounds.", reactions.len());
-
-        let data = Data {
-            compounds: reactions,
-        };
-
-        serialize(&data);
+    let data_string = "data/data.json".to_string();
+    let initialize:(Box<HashMap<String, ChemTree>>, Maps);
+    if updated || !data_exists(&data_string) || args.update {
+        initialize = initialize_compound_tree(data_string, paths);
+    } else {
+        initialize = initialize_compound_tree(data_string, None);
     }
 
-    let reactions = deserialize();
-
-    //This is a map of all the reaction names
-    let mut reaction_map: HashMap<String, Reaction> = HashMap::with_capacity(reactions.len());
-    let mut result_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
-    let mut search_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
-    // registers all possible results with their respective internal names
-    for reaction in &reactions {
-        if !reaction.get_result().is_empty() {
-            search_map = generate_search_keys(search_map, reaction.clone());
-            result_map
-                .entry(reaction.get_result())
-                .or_default()
-                .push(reaction.get_internal_name());
-        }
-    }
-
-    // for r in &result_map {
-    //     if r.1.len() > 1 {
-    //         println!("{:?}", r);
-    //     }
-    // }
-
-    for reaction in &reactions {
-        reaction_map.insert(reaction.get_internal_name(), reaction.clone());
-    }
-
-    let maps = Maps {
-        reaction_map,
-        result_map,
-        search_map,
-    };
-
-    let mut compound_trees: Box<HashMap<String, ChemTree>> =
-        Box::new(HashMap::with_capacity(reactions.len()));
-
-    for reaction in reactions {
-        let name = reaction.get_internal_name();
-        let node = ChemTreeNode::new(
-            reaction.get_specific_recipe_result_amount(0),
-            Chemical::Compound(reaction),
-            None,
-        );
-        //println!("{}", node.get_id());
-        let mut chem_tree = ChemTree::new(node);
-        chem_tree.populate(&maps);
-        compound_trees.insert(name, chem_tree);
-    }
+    let compound_trees: Box<HashMap<String, ChemTree>> = initialize.0;
+    let maps = initialize.1;
 
     // Command Line Interface for looking up Compounds
     if args.cli {
