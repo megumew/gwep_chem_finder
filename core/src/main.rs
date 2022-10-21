@@ -64,7 +64,7 @@ fn main() {
                 }
                 Err(e) => eprintln!("Error: {}", e),
             }
-            let clean = clean_input(user_input.trim().to_string());
+            let clean = clean_input(user_input.trim().to_lowercase().to_string());
 
             if clean.is_empty(){
                 println!("Please input a chemical to display or a command with '/'")
@@ -78,7 +78,10 @@ fn main() {
                             "h" | "help" => println!("Commands:\n/(r)equires - Displays all reactions required by given chem."),
                             "r" | "requires" => {
                                 match words.get(1) {
-                                    Some(w) => println!("\"{}\" is required by TEST", w),
+                                    Some(w) => { 
+                                        let uses = maps.uses_map.get(words[1]);
+                                        println!("\"{}\" is required by {:?}", w, uses)
+                                    },
                                     None => println!("This command requires an argument!")
                                 }
         

@@ -17,6 +17,7 @@ pub fn initialize_compound_tree(serialize_path: String, optional_path: Option<St
     let mut reaction_map: HashMap<String, Reaction> = HashMap::with_capacity(reactions.len());
     let mut result_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
     let mut search_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
+    let mut uses_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
     // registers all possible results with their respective internal names
     for reaction in &reactions {
         if !reaction.get_result().is_empty() {
@@ -26,16 +27,36 @@ pub fn initialize_compound_tree(serialize_path: String, optional_path: Option<St
                 .or_default()
                 .push(reaction.get_internal_name());
         }
-    }
-
-    for reaction in &reactions {
         reaction_map.insert(reaction.get_internal_name(), reaction.clone());
+
+        for recipe in reaction.get_all_recipes() {
+            for reagent in recipe {
+                let name = reagent.name.clone();
+                match uses_map.get(&name) {
+                    None => {
+                        uses_map
+                            .entry(name)
+                            .or_default()
+                            .push(reaction.get_internal_name());
+                    },
+                    Some(result) => {
+                        if !result.contains(&name) {
+                            uses_map
+                                .entry(name)
+                                .or_default()
+                                .push(reaction.get_internal_name());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     let maps = Maps {
         reaction_map,
         result_map,
         search_map,
+        uses_map,
     };
 
     let mut compound_trees: Box<HashMap<String, ChemTree>> =
