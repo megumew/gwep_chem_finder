@@ -2,18 +2,14 @@ use std::{io, collections::HashMap};
 
 use data::{search_engine::*, chemicals::{BASES_MAP, BASES}, chem_tree::ChemTree};
 
+use crate::print::print_dispenser_format;
+
 pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
-    loop {
-        println!("Enter your input, or type 'quit' to exit");
+    'cli: loop {
+        println!("Enter your input, or type '/help' to see commands");
         let mut user_input = String::new();
         match io::stdin().read_line(&mut user_input) {
-            Ok(_) => {
-                if user_input.trim().to_lowercase() == "quit"
-                    || user_input.trim().to_lowercase() == "'quit'"
-                {
-                    break;
-                }
-            }
+            Ok(_) => {}
             Err(e) => eprintln!("Error: {}", e),
         }
         let clean = clean_input(user_input.trim().to_lowercase().to_string());
@@ -22,11 +18,17 @@ pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
             println!("Please input a chemical to display or a command with '/'")
         } else if !clean.is_empty() && clean.chars().next().unwrap() == '/' {
             let command = &clean[1..clean.len()];
-            let words = command.split_ascii_whitespace().collect::<Vec<&str>>();
+            let words: Vec<&str> = command.split_ascii_whitespace().collect();
             match words.first(){
                 Some(w) =>{
                     match w.to_lowercase().as_str() {
-                        "h" | "help" => println!("Commands:\n/(r)equires - Displays all reactions required by given chem."),
+                        "q" | "quit" => { break 'cli }
+                        "h" | "help" => { 
+                            println!("\nCommands:\n\n/(r)equires - Displays all reactions required by given chem.");
+                            println!("/(b)ases - Displays all bases used in-game.");  
+                            println!("/(h)elp - Displays this help page.");  
+                            println!("/(q)uit - Quits the program."); 
+                        }
                         "b" | "bases" => println!("Available Bases: {:?}", BASES),
                         "r" | "requires" => {
                             match words.get(1) {
@@ -61,26 +63,20 @@ pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
                 Some(x) => {
                     if x.len() > 1 {
                         let selection = collision_select(x);
-                        reaction_trees
-                            .get(&selection)
-                            .unwrap()
-                            .print_dispenser_format();
+                        print_dispenser_format(reaction_trees.get(&selection).unwrap().clone());
                     } else {
-                        reaction_trees
-                            .get(x.first().unwrap())
-                            .unwrap()
-                            .print_dispenser_format();
+                        print_dispenser_format(reaction_trees.get(&x[0]).unwrap().clone());
                     }
                 }
                 None => {
                     let direct = reaction_trees.get(&clean);
                     match direct {
-                        Some(x) => x.print_dispenser_format(),
+                        Some(x) => print_dispenser_format(x.clone()),
                         None => {
                             let fuzzy = fuzzy_search(&clean, &maps);
                             let search_result = reaction_trees.get(&fuzzy);
                             match search_result {
-                                Some(x) => x.print_dispenser_format(),
+                                Some(x) => print_dispenser_format(x.clone()),
                                 None => {}
                             }
                         }
