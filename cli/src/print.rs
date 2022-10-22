@@ -16,17 +16,18 @@ pub fn print_dispenser_format(tree: ChemTree) {
             let mut bases = String::new();
             let mut compounds = String::new();
             let mut ingredients = String::new();
-
             for reagent in recipe {
-                let result = print_branch(reagent.clone(), 0);
+                // I heard u liked one-liners... This gets the percent each reagent is of the top chem
+                let percent = tree.root.get_reagents().as_ref().unwrap()[0].iter().fold(0.0, |a, b| a + b.quantity);
+                let result = print_branch(reagent.clone(), 0, percent);
                 match result.0 {
-                    Chemical::Compound(_compound) => {
+                    Chemical::Compound(_) => {
                         compounds = format!("{}\n{}", compounds, result.1.as_str());
                     }
-                    Chemical::Base(_base) => {
+                    Chemical::Base(_) => {
                         bases.push_str(result.1.as_str());
                     }
-                    Chemical::Ingredient(_ingredient) => {
+                    Chemical::Ingredient(_) => {
                         ingredients.push_str(result.1.as_str());
                     }
                 }
@@ -78,7 +79,7 @@ pub fn print_dispenser_format(tree: ChemTree) {
 }
 
 // probably needs to be broken into seperate functions for each reagent type
-fn print_branch(branch: ChemTreeNode, layer: i8) -> (Chemical, String) {
+fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32) -> (Chemical, String) {
     let result: (&Chemical, String);
 
     let mut tab = String::new();
@@ -94,7 +95,7 @@ fn print_branch(branch: ChemTreeNode, layer: i8) -> (Chemical, String) {
             for top_branch in branch.get_reagents() {
                 let recipe = &top_branch[0]; // Moved Hardcoded use of 1st Recipe here
                 for node in recipe {
-                    branch_strings.push(print_branch(node.clone(), layer + 1));
+                    branch_strings.push(print_branch(node.clone(), layer + 1, percent*(branch.quantity/100.0)));
                 }
             }
 
@@ -104,13 +105,13 @@ fn print_branch(branch: ChemTreeNode, layer: i8) -> (Chemical, String) {
 
             for s in branch_strings {
                 match s.0 {
-                    Chemical::Compound(_compound) => {
+                    Chemical::Compound(_) => {
                         compounds = format!("{}\n{}", compounds, s.1.as_str());
                     }
-                    Chemical::Base(_base) => {
+                    Chemical::Base(_) => {
                         bases.push_str(s.1.as_str());
                     }
-                    Chemical::Ingredient(_ingredient) => {
+                    Chemical::Ingredient(_) => {
                         ingredients.push_str(s.1.as_str());
                     }
                 }
@@ -128,8 +129,8 @@ fn print_branch(branch: ChemTreeNode, layer: i8) -> (Chemical, String) {
             }
 
             let compound_value = format!(
-                "{tab}[{} {}]",
-                branch.quantity,
+                "{tab}[{}% {}]",
+                (percent*(branch.quantity/100.0)*100.0).round()/100.0,
                 compound.get_internal_name().to_ascii_uppercase()
             );
 
@@ -153,8 +154,8 @@ fn print_branch(branch: ChemTreeNode, layer: i8) -> (Chemical, String) {
             result = (
                 &branch.chemical,
                 format!(
-                    "({} {}) ",
-                    branch.quantity,
+                    "({}% {}) ",
+                    (percent*(branch.quantity/100.0)*100.0).round()/100.0,
                     base.get_id().to_ascii_uppercase()
                 ),
             );
@@ -162,7 +163,7 @@ fn print_branch(branch: ChemTreeNode, layer: i8) -> (Chemical, String) {
         Chemical::Ingredient(ingredient) => {
             result = (
                 &branch.chemical,
-                format!("<{} \"{}\"> ", branch.quantity, ingredient.get_id()),
+                format!("<{}% \"{}\"> ", (percent*(branch.quantity/100.0)*100.0).round()/100.0, ingredient.get_id()),
             );
         }
     }
