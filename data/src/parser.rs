@@ -155,7 +155,7 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
                 _ => println!("{:?}", line.as_rule()),
             }
         }
-        let recipe = Recipe::new(id, raw_reagents, Vec::new(), result_amount);
+        let recipe = Recipe::new(id, raw_reagents, result_amount);
 
         if name.is_empty() && result.is_empty() {
             let old_comp = reactions.pop().unwrap();

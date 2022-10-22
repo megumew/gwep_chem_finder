@@ -5,6 +5,7 @@ pub struct Maps {
     pub reaction_map: HashMap<String, Reaction>,
     pub result_map: HashMap<String, Vec<String>>,
     pub search_map: HashMap<String, Vec<String>>,
+    pub uses_map: HashMap<String, Vec<String>>,
 }
 
 pub fn generate_search_keys(

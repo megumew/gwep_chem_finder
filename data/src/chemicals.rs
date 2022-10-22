@@ -140,12 +140,6 @@ impl RawReagent {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct Reagent {
-    chemical: Chemical,
-    quantity: u32,
-}
-
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(transparent)]
 pub struct Data {
@@ -173,7 +167,6 @@ impl Chemical {
 pub struct Recipe {
     id: String,
     raw_reagents: Vec<RawReagent>,
-    required_reagents: Vec<Reagent>,
     result_amount: f32,
 }
 
@@ -181,13 +174,11 @@ impl Recipe {
     pub fn new(
         id: String,
         raw_reagents: Vec<RawReagent>,
-        required_reagents: Vec<Reagent>,
         result_amount: f32,
     ) -> Recipe {
         Recipe {
             id,
             raw_reagents,
-            required_reagents,
             result_amount,
         }
     }
@@ -288,7 +279,7 @@ impl Reaction {
 
         for base in BASES_MAP.clone().into_keys() {
             match maps.reaction_map.get(&base.to_string()) {
-                Some(_) => panic!("{}", base),
+                Some(_) => panic!("{} should not be in the Reaction Map", base),
                 None => {}
             }
         }
