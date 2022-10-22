@@ -1,5 +1,5 @@
 [package]
-name = "core"
+name = "cli"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,3 @@ edition = "2021"
 
 [dependencies]
 data = {path = "../data"}
-cli = {path = "../cli"}
-pest = "2.3.0"
-pest_derive = "2.3.0"
-clap = {version = "4.0.17", features = ["derive"]}

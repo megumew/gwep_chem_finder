@@ -1,7 +1,16 @@
+use crate::{
+    chem_tree::{ChemTree, ChemTreeNode},
+    chemicals::{Chemical, Data, Reaction},
+    local::{deserialize, serialize},
+    parser,
+    search_engine::{generate_search_keys, Maps},
+};
 use std::collections::HashMap;
-use crate::{chemicals::{Chemical, Reaction, Data}, chem_tree::{ChemTree, ChemTreeNode}, parser, search_engine::{generate_search_keys, Maps}, local::{deserialize, serialize}};
 
-pub fn initialize_compound_tree(serialize_path: String, optional_path: Option<String>) -> (Box<HashMap<String, ChemTree>>, Maps) {
+pub fn initialize_compound_tree(
+    serialize_path: String,
+    optional_path: Option<String>,
+) -> (Box<HashMap<String, ChemTree>>, Maps) {
     match optional_path {
         Some(path) => {
             let reactions = parser::parse(path);
@@ -38,7 +47,7 @@ pub fn initialize_compound_tree(serialize_path: String, optional_path: Option<St
                             .entry(name)
                             .or_default()
                             .push(reaction.get_internal_name());
-                    },
+                    }
                     Some(result) => {
                         if !result.contains(&name) {
                             uses_map
@@ -75,4 +84,3 @@ pub fn initialize_compound_tree(serialize_path: String, optional_path: Option<St
     }
     (compound_trees, maps)
 }
-

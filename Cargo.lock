@@ -102,10 +102,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "cli"
+version = "0.1.0"
+dependencies = [
+ "data",
+]
+
+[[package]]
 name = "core"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "cli",
  "data",
  "pest",
  "pest_derive",

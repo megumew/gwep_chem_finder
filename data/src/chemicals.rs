@@ -171,11 +171,7 @@ pub struct Recipe {
 }
 
 impl Recipe {
-    pub fn new(
-        id: String,
-        raw_reagents: Vec<RawReagent>,
-        result_amount: f32,
-    ) -> Recipe {
+    pub fn new(id: String, raw_reagents: Vec<RawReagent>, result_amount: f32) -> Recipe {
         Recipe {
             id,
             raw_reagents,
@@ -271,107 +267,116 @@ impl Reaction {
 }
 
 #[cfg(test)]
-    use crate::initialize_maps::initialize_compound_tree;
-    #[test]
-    fn test_no_bases_in_reaction_map() {
-        let initialize = initialize_compound_tree("data.json".to_string(), None);
-        let maps = initialize.1;
+use crate::initialize_maps::initialize_compound_tree;
+#[test]
+fn test_no_bases_in_reaction_map() {
+    let initialize = initialize_compound_tree("data.json".to_string(), None);
+    let maps = initialize.1;
 
-        for base in BASES_MAP.clone().into_keys() {
-            match maps.reaction_map.get(&base.to_string()) {
-                Some(_) => panic!("{} should not be in the Reaction Map", base),
-                None => {}
-            }
+    for base in BASES_MAP.clone().into_keys() {
+        match maps.reaction_map.get(&base.to_string()) {
+            Some(_) => panic!("{} should not be in the Reaction Map", base),
+            None => {}
         }
     }
-    #[test]
-    fn test_acetic_acid() {
-        let initialize = initialize_compound_tree("data.json".to_string(), None);
-        let maps = initialize.1;
+}
+#[test]
+fn test_acetic_acid() {
+    let initialize = initialize_compound_tree("data.json".to_string(), None);
+    let maps = initialize.1;
 
-        let reaction = maps.reaction_map.get("acetic_acid").unwrap();
+    let reaction = maps.reaction_map.get("acetic_acid").unwrap();
 
-        let reagents = reaction.get_all_recipes();
+    let reagents = reaction.get_all_recipes();
 
-        assert_eq!(reagents.len(), reaction.recipe_amount());
-        assert_eq!(reagents.len(), 1);
-        assert_eq!(reagents[0].len(), 3);
-        assert_eq!(reagents[0][0].name, "acetaldehyde".to_string());
-        assert_eq!(reagents[0][0].quantity, 1);
-        assert_eq!(reagents[0][1].name, "oxygen".to_string());
-        assert_eq!(reagents[0][1].quantity, 1);
-        assert_eq!(reagents[0][2].name, "nitrogen".to_string());
-        assert_eq!(reagents[0][2].quantity, 4);
-        assert_eq!(reaction.result_amount(0), 3.0);
-        assert_eq!(reaction.internal_name, "acetic_acid".to_string());
-        assert_eq!(reaction.name, "Acetic Acid".to_string());
-        assert_eq!(reaction.result, "acetic_acid".to_string());
-        assert_eq!(reaction.recipes[0].id, "acetic_acid".to_string());
-        assert_eq!(reaction.required_temperature, None);
-        assert_eq!(reaction.mix_phrase, "It smells like vinegar and a bad hangover in here.".to_string());
-        assert_eq!(reaction.instant, false);
-        assert_eq!(reaction.hidden, false);
-    }
-    #[test]
-    fn test_vtonic() {
-        let initialize = initialize_compound_tree("data.json".to_string(), None);
-        let maps = initialize.1;
+    assert_eq!(reagents.len(), reaction.recipe_amount());
+    assert_eq!(reagents.len(), 1);
+    assert_eq!(reagents[0].len(), 3);
+    assert_eq!(reagents[0][0].name, "acetaldehyde".to_string());
+    assert_eq!(reagents[0][0].quantity, 1);
+    assert_eq!(reagents[0][1].name, "oxygen".to_string());
+    assert_eq!(reagents[0][1].quantity, 1);
+    assert_eq!(reagents[0][2].name, "nitrogen".to_string());
+    assert_eq!(reagents[0][2].quantity, 4);
+    assert_eq!(reaction.result_amount(0), 3.0);
+    assert_eq!(reaction.internal_name, "acetic_acid".to_string());
+    assert_eq!(reaction.name, "Acetic Acid".to_string());
+    assert_eq!(reaction.result, "acetic_acid".to_string());
+    assert_eq!(reaction.recipes[0].id, "acetic_acid".to_string());
+    assert_eq!(reaction.required_temperature, None);
+    assert_eq!(
+        reaction.mix_phrase,
+        "It smells like vinegar and a bad hangover in here.".to_string()
+    );
+    assert_eq!(reaction.instant, false);
+    assert_eq!(reaction.hidden, false);
+}
+#[test]
+fn test_vtonic() {
+    let initialize = initialize_compound_tree("data.json".to_string(), None);
+    let maps = initialize.1;
 
-        let reaction = maps.reaction_map.get("cocktail_vtonic").unwrap();
+    let reaction = maps.reaction_map.get("cocktail_vtonic").unwrap();
 
-        let reagents = reaction.get_all_recipes();
+    let reagents = reaction.get_all_recipes();
 
-        assert_eq!(reagents.len(), reaction.recipe_amount());
-        assert_eq!(reagents.len(), 1);
-        assert_eq!(reagents[0].len(), 2);
-        assert_eq!(reagents[0][0].name, "vodka".to_string());
-        assert_eq!(reagents[0][0].quantity, 1);
-        assert_eq!(reagents[0][1].name, "tonic".to_string());
-        assert_eq!(reagents[0][1].quantity, 1);
-        assert_eq!(reaction.result_amount(0), 2.0);
-        assert_eq!(reaction.internal_name, "cocktail_vtonic".to_string());
-        assert_eq!(reaction.name, "Vodka Tonic".to_string());
-        assert_eq!(reaction.result, "vtonic".to_string());
-        assert_eq!(reaction.recipes[0].id, "vtonic".to_string());
-        assert_eq!(reaction.required_temperature, None);
-        assert_eq!(reaction.mix_phrase, "The tonic water and vodka mix together perfectly.".to_string());
-        assert_eq!(reaction.instant, false);
-        assert_eq!(reaction.hidden, false);
-    }
-    #[test]
-    fn test_dna_mutagen() {
-        let initialize = initialize_compound_tree("data.json".to_string(), None);
-        let maps = initialize.1;
+    assert_eq!(reagents.len(), reaction.recipe_amount());
+    assert_eq!(reagents.len(), 1);
+    assert_eq!(reagents[0].len(), 2);
+    assert_eq!(reagents[0][0].name, "vodka".to_string());
+    assert_eq!(reagents[0][0].quantity, 1);
+    assert_eq!(reagents[0][1].name, "tonic".to_string());
+    assert_eq!(reagents[0][1].quantity, 1);
+    assert_eq!(reaction.result_amount(0), 2.0);
+    assert_eq!(reaction.internal_name, "cocktail_vtonic".to_string());
+    assert_eq!(reaction.name, "Vodka Tonic".to_string());
+    assert_eq!(reaction.result, "vtonic".to_string());
+    assert_eq!(reaction.recipes[0].id, "vtonic".to_string());
+    assert_eq!(reaction.required_temperature, None);
+    assert_eq!(
+        reaction.mix_phrase,
+        "The tonic water and vodka mix together perfectly.".to_string()
+    );
+    assert_eq!(reaction.instant, false);
+    assert_eq!(reaction.hidden, false);
+}
+#[test]
+fn test_dna_mutagen() {
+    let initialize = initialize_compound_tree("data.json".to_string(), None);
+    let maps = initialize.1;
 
-        let reaction = maps.reaction_map.get("dna_mutagen").unwrap();
+    let reaction = maps.reaction_map.get("dna_mutagen").unwrap();
 
-        let reagents = reaction.get_all_recipes();
+    let reagents = reaction.get_all_recipes();
 
-        assert_eq!(reagents.len(), reaction.recipe_amount());
-        assert_eq!(reagents.len(), 2);
-        assert_eq!(reagents[0].len(), 4);
-        assert_eq!(reagents[0][0].name, "mutagen".to_string());
-        assert_eq!(reagents[0][0].quantity, 1);
-        assert_eq!(reagents[0][1].name, "lithium".to_string());
-        assert_eq!(reagents[0][1].quantity, 1);
-        assert_eq!(reagents[0][2].name, "acetone".to_string());
-        assert_eq!(reagents[0][2].quantity, 1);
-        assert_eq!(reagents[0][3].name, "bromine".to_string());
-        assert_eq!(reagents[0][3].quantity, 1);
-        assert_eq!(reagents[1].len(), 2);
-        assert_eq!(reagents[1][0].name, "mutadone".to_string());
-        assert_eq!(reagents[1][0].quantity, 3);
-        assert_eq!(reagents[1][1].name, "lithium".to_string());
-        assert_eq!(reagents[1][1].quantity, 1);
-        assert_eq!(reaction.result_amount(0), 3.0);
-        assert_eq!(reaction.result_amount(1), 4.0);
-        assert_eq!(reaction.internal_name, "dna_mutagen".to_string());
-        assert_eq!(reaction.name, "Stable mutagen".to_string());
-        assert_eq!(reaction.result, "dna_mutagen".to_string());
-        assert_eq!(reaction.recipes[0].id, "dna_mutagen".to_string());
-        assert_eq!(reaction.recipes[1].id, "dna_mutagen2".to_string());
-        assert_eq!(reaction.required_temperature, None);
-        assert_eq!(reaction.mix_phrase, "The substance turns a drab green and begins to bubble.".to_string());
-        assert_eq!(reaction.instant, false);
-        assert_eq!(reaction.hidden, false);
-    }
+    assert_eq!(reagents.len(), reaction.recipe_amount());
+    assert_eq!(reagents.len(), 2);
+    assert_eq!(reagents[0].len(), 4);
+    assert_eq!(reagents[0][0].name, "mutagen".to_string());
+    assert_eq!(reagents[0][0].quantity, 1);
+    assert_eq!(reagents[0][1].name, "lithium".to_string());
+    assert_eq!(reagents[0][1].quantity, 1);
+    assert_eq!(reagents[0][2].name, "acetone".to_string());
+    assert_eq!(reagents[0][2].quantity, 1);
+    assert_eq!(reagents[0][3].name, "bromine".to_string());
+    assert_eq!(reagents[0][3].quantity, 1);
+    assert_eq!(reagents[1].len(), 2);
+    assert_eq!(reagents[1][0].name, "mutadone".to_string());
+    assert_eq!(reagents[1][0].quantity, 3);
+    assert_eq!(reagents[1][1].name, "lithium".to_string());
+    assert_eq!(reagents[1][1].quantity, 1);
+    assert_eq!(reaction.result_amount(0), 3.0);
+    assert_eq!(reaction.result_amount(1), 4.0);
+    assert_eq!(reaction.internal_name, "dna_mutagen".to_string());
+    assert_eq!(reaction.name, "Stable mutagen".to_string());
+    assert_eq!(reaction.result, "dna_mutagen".to_string());
+    assert_eq!(reaction.recipes[0].id, "dna_mutagen".to_string());
+    assert_eq!(reaction.recipes[1].id, "dna_mutagen2".to_string());
+    assert_eq!(reaction.required_temperature, None);
+    assert_eq!(
+        reaction.mix_phrase,
+        "The substance turns a drab green and begins to bubble.".to_string()
+    );
+    assert_eq!(reaction.instant, false);
+    assert_eq!(reaction.hidden, false);
+}
