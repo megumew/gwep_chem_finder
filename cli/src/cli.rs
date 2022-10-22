@@ -31,12 +31,11 @@ pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
                         "r" | "requires" => {
                             match words.get(1) {
                                 Some(w) => { 
-                                    let mut lookup = String::new();
-                                    match BASES_MAP.get(w){
-                                        Some(b) => lookup = w.to_string(),
+                                    let lookup = match BASES_MAP.get(w){
+                                        Some(_) => w.to_string(),
                                     
-                                        None => lookup = fuzzy_search(&w.to_string(), &maps),
-                                    }
+                                        None => fuzzy_search(&w.to_string(), &maps),
+                                    };
                                     let uses = maps.uses_map.get(&lookup);
                                     match uses {
                                         Some(r) => {

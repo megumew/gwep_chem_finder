@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::io;
 
 use clap::Parser;
 use cli::cli::start_cli;
