@@ -28,15 +28,15 @@ pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
             match words.first() {
                 Some(w) => match w.to_lowercase().as_str() {
                     "q" | "quit" => break 'cli,
-                    "t" | "toggle" => { 
-                        if toggle == true { 
+                    "t" | "toggle" => {
+                        if toggle == true {
                             println!("Showing recipes without a %");
-                            toggle = false 
+                            toggle = false
                         } else {
                             println!("Showing recipes as a %");
-                            toggle = true 
-                        } 
-                    },
+                            toggle = true
+                        }
+                    }
                     "h" | "help" => print_help(),
                     "b" | "bases" => println!("Available Bases: {:?}", BASES),
                     "r" | "requires" => match words.get(1) {
@@ -55,7 +55,10 @@ pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
                 Some(x) => {
                     if x.len() > 1 {
                         let selection = collision_select(x);
-                        print_dispenser_format(reaction_trees.get(&selection).unwrap().clone(), toggle);
+                        print_dispenser_format(
+                            reaction_trees.get(&selection).unwrap().clone(),
+                            toggle,
+                        );
                     } else {
                         print_dispenser_format(reaction_trees.get(&x[0]).unwrap().clone(), toggle);
                     }

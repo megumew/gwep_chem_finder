@@ -21,10 +21,13 @@ pub fn print_dispenser_format(tree: ChemTree, show_percent: bool) {
             let mut ingredients = String::new();
             for reagent in recipe {
                 // I heard u liked one-liners... This gets the percent each reagent is of the top chem
-                let percent =  if  show_percent {
-                    (100.0 * (100.0 / tree.root.get_reagents().as_ref().unwrap()[0]
-                    .iter()
-                    .fold(0.0, |a, b| a + b.quantity)).round())/100.0
+                let percent = if show_percent {
+                    ((10000.0
+                        / tree.root.get_reagents().as_ref().unwrap()[0]
+                            .iter()
+                            .fold(0.0, |a, b| a + b.quantity))
+                    .round())
+                        / 100.0
                 } else {
                     reagent.quantity as f32
                 };
@@ -86,7 +89,12 @@ pub fn print_dispenser_format(tree: ChemTree, show_percent: bool) {
 }
 
 // probably needs to be broken into seperate functions for each reagent type
-fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32, show_percent: bool) -> (Chemical, String) {
+fn print_branch(
+    branch: ChemTreeNode,
+    layer: i8,
+    percent: f32,
+    show_percent: bool,
+) -> (Chemical, String) {
     let result: (&Chemical, String);
 
     let mut tab = String::new();
@@ -107,14 +115,18 @@ fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32, show_percent: boo
                             node.clone(),
                             layer + 1,
                             node.quantity,
-                            show_percent
+                            show_percent,
                         ));
                     } else {
                         branch_strings.push(print_branch(
                             node.clone(),
                             layer + 1,
-                            ((100.0 * percent/(node.quantity * (recipe.iter().fold(0.0, |a, b| a + b.quantity)))).round())/100.0 ,
-                            show_percent
+                            ((100.0 * percent
+                                / (node.quantity
+                                    * (recipe.iter().fold(0.0, |a, b| a + b.quantity))))
+                            .round())
+                                / 100.0,
+                            show_percent,
                         ));
                     }
                 }
@@ -149,20 +161,19 @@ fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32, show_percent: boo
                 new_branch = format!("{new_branch}\n{tab}{}", compounds);
             }
 
-            let compound_value = 
-                if show_percent {
-                    format!(
-                        "{tab}[{}% {}]",
-                        percent,
-                        compound.get_internal_name().to_ascii_uppercase()
-                    )
-                } else {
-                    format!(
-                        "{tab}[{} {}]",
-                        percent,
-                        compound.get_internal_name().to_ascii_uppercase()
-                    )
-                };
+            let compound_value = if show_percent {
+                format!(
+                    "{tab}[{}% {}]",
+                    percent,
+                    compound.get_internal_name().to_ascii_uppercase()
+                )
+            } else {
+                format!(
+                    "{tab}[{} {}]",
+                    percent,
+                    compound.get_internal_name().to_ascii_uppercase()
+                )
+            };
 
             let temp_val = compound.get_required_temp();
 
@@ -184,20 +195,12 @@ fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32, show_percent: boo
             if show_percent {
                 result = (
                     &branch.chemical,
-                    format!(
-                        "({}% {}) ",
-                        percent,
-                        base.get_id().to_ascii_uppercase()
-                    ),
+                    format!("({}% {}) ", percent, base.get_id().to_ascii_uppercase()),
                 );
             } else {
                 result = (
                     &branch.chemical,
-                    format!(
-                        "({} {}) ",
-                        percent,
-                        base.get_id().to_ascii_uppercase()
-                    ),
+                    format!("({} {}) ", percent, base.get_id().to_ascii_uppercase()),
                 );
             }
         }
@@ -205,20 +208,12 @@ fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32, show_percent: boo
             if show_percent {
                 result = (
                     &branch.chemical,
-                    format!(
-                        "<{}%\"{}\"> ",
-                        percent,
-                        ingredient.get_id()
-                    ),
+                    format!("<{}%\"{}\"> ", percent, ingredient.get_id()),
                 );
             } else {
                 result = (
                     &branch.chemical,
-                    format!(
-                        "<{}\"{}\"> ",
-                        percent,
-                        ingredient.get_id()
-                    ),
+                    format!("<{}\"{}\"> ", percent, ingredient.get_id()),
                 );
             }
         }
