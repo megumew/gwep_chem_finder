@@ -29,13 +29,11 @@ pub fn initialize_compound_tree(
     let mut uses_map: HashMap<String, Vec<String>> = HashMap::with_capacity(reactions.len());
     // registers all possible results with their respective internal names
     for reaction in &reactions {
-        if !reaction.get_result().is_empty() {
-            search_map = generate_search_keys(search_map, reaction.clone());
-            result_map
-                .entry(reaction.get_result())
-                .or_default()
-                .push(reaction.get_internal_name());
-        }
+        search_map = generate_search_keys(search_map, reaction.clone());
+        result_map
+            .entry(reaction.get_result())
+            .or_default()
+            .push(reaction.get_internal_name());
         reaction_map.insert(reaction.get_internal_name(), reaction.clone());
 
         for recipe in reaction.get_all_recipes() {
