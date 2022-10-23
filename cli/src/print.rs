@@ -22,9 +22,9 @@ pub fn print_dispenser_format(tree: ChemTree, show_percent: bool) {
             for reagent in recipe {
                 // I heard u liked one-liners... This gets the percent each reagent is of the top chem
                 let percent =  if  show_percent {
-                    (100.0 / tree.root.get_reagents().as_ref().unwrap()[0]
+                    (100.0 * (100.0 / tree.root.get_reagents().as_ref().unwrap()[0]
                     .iter()
-                    .fold(0.0, |a, b| a + b.quantity)).round()
+                    .fold(0.0, |a, b| a + b.quantity)).round())/100.0
                 } else {
                     reagent.quantity as f32
                 };
@@ -113,7 +113,7 @@ fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32, show_percent: boo
                         branch_strings.push(print_branch(
                             node.clone(),
                             layer + 1,
-                            (percent/(node.quantity * (recipe.iter().fold(0.0, |a, b| a + b.quantity)))).round(),
+                            ((100.0 * percent/(node.quantity * (recipe.iter().fold(0.0, |a, b| a + b.quantity)))).round())/100.0 ,
                             show_percent
                         ));
                     }
