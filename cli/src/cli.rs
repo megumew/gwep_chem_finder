@@ -9,6 +9,8 @@ use data::{
 use crate::print::print_dispenser_format;
 
 pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
+    let mut toggle = false;
+
     'cli: loop {
         println!("Enter your input, or type '/help' to see commands");
         let mut user_input = String::new();
@@ -26,6 +28,15 @@ pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
             match words.first() {
                 Some(w) => match w.to_lowercase().as_str() {
                     "q" | "quit" => break 'cli,
+                    "t" | "toggle" => { 
+                        if toggle == true { 
+                            println!("Showing recipes without a %");
+                            toggle = false 
+                        } else {
+                            println!("Showing recipes as a %");
+                            toggle = true 
+                        } 
+                    },
                     "h" | "help" => print_help(),
                     "b" | "bases" => println!("Available Bases: {:?}", BASES),
                     "r" | "requires" => match words.get(1) {
@@ -44,20 +55,20 @@ pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
                 Some(x) => {
                     if x.len() > 1 {
                         let selection = collision_select(x);
-                        print_dispenser_format(reaction_trees.get(&selection).unwrap().clone());
+                        print_dispenser_format(reaction_trees.get(&selection).unwrap().clone(), toggle);
                     } else {
-                        print_dispenser_format(reaction_trees.get(&x[0]).unwrap().clone());
+                        print_dispenser_format(reaction_trees.get(&x[0]).unwrap().clone(), toggle);
                     }
                 }
                 None => {
                     let direct = reaction_trees.get(&clean);
                     match direct {
-                        Some(x) => print_dispenser_format(x.clone()),
+                        Some(x) => print_dispenser_format(x.clone(), toggle),
                         None => {
                             let fuzzy = fuzzy_search(&clean, &maps);
                             let search_result = reaction_trees.get(&fuzzy);
                             match search_result {
-                                Some(x) => print_dispenser_format(x.clone()),
+                                Some(x) => print_dispenser_format(x.clone(), toggle),
                                 None => {}
                             }
                         }

@@ -36,18 +36,15 @@ impl ChemTree {
         let mut top_branch: Vec<Vec<ChemTreeNode>> = Vec::new();
 
         for raw_reagents in all_recipes {
-            let total_amount = raw_reagents.iter().fold(0.0, |a, b| a + b.quantity as f32);
             let mut branches: Vec<ChemTreeNode> = Vec::new();
             for reagent in raw_reagents {
                 let mut reagents: Option<Vec<Vec<ChemTreeNode>>> = None;
                 let chemical: Chemical;
                 let name = &reagent.name;
-                let quantity = reagent.quantity as f32 / total_amount * 100.0;
+                let quantity = reagent.quantity;
 
                 if maps.reaction_map.contains_key(name) {
                     let reaction = maps.reaction_map.get(name).unwrap().clone();
-                    // Refactor all Reagent "quantities" later to get the smallest ratio between Reagents to get final Chemical
-                    // quantity = reaction.get_specific_recipe_result_amount(0);
                     chemical = Chemical::Compound(reaction);
                     reagents = Some(Self::populate_branches(chemical.clone(), maps));
                 } else if BASES_MAP.contains_key(&name.as_str()) {
@@ -61,7 +58,7 @@ impl ChemTree {
                     chemical = Chemical::Ingredient(Ingredient::new(name.clone()));
                 }
 
-                let reagent_node = ChemTreeNode::new(quantity, chemical, reagents);
+                let reagent_node = ChemTreeNode::new(quantity as f32, chemical, reagents);
 
                 branches.push(reagent_node);
             }
