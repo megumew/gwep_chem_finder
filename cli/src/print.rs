@@ -1,4 +1,7 @@
-use data::{chem_tree::{ChemTree, ChemTreeNode}, chemicals::Chemical};
+use data::{
+    chem_tree::{ChemTree, ChemTreeNode},
+    chemicals::Chemical,
+};
 
 pub fn print_dispenser_format(tree: ChemTree) {
     for node in tree.root.get_reagents() {
@@ -18,7 +21,9 @@ pub fn print_dispenser_format(tree: ChemTree) {
             let mut ingredients = String::new();
             for reagent in recipe {
                 // I heard u liked one-liners... This gets the percent each reagent is of the top chem
-                let percent = tree.root.get_reagents().as_ref().unwrap()[0].iter().fold(0.0, |a, b| a + b.quantity);
+                let percent = tree.root.get_reagents().as_ref().unwrap()[0]
+                    .iter()
+                    .fold(0.0, |a, b| a + b.quantity);
                 let result = print_branch(reagent.clone(), 0, percent);
                 match result.0 {
                     Chemical::Compound(_) => {
@@ -71,9 +76,7 @@ pub fn print_dispenser_format(tree: ChemTree) {
                 println!("-------------------------------------");
             }
 
-            println!(
-                "////////////////////////////////////////////////////////////////////////\n"
-            );
+            println!("////////////////////////////////////////////////////////////////////////\n");
         }
     }
 }
@@ -95,7 +98,11 @@ fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32) -> (Chemical, Str
             for top_branch in branch.get_reagents() {
                 let recipe = &top_branch[0]; // Moved Hardcoded use of 1st Recipe here
                 for node in recipe {
-                    branch_strings.push(print_branch(node.clone(), layer + 1, percent*(branch.quantity/100.0)));
+                    branch_strings.push(print_branch(
+                        node.clone(),
+                        layer + 1,
+                        percent * (branch.quantity / 100.0),
+                    ));
                 }
             }
 
@@ -130,7 +137,7 @@ fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32) -> (Chemical, Str
 
             let compound_value = format!(
                 "{tab}[{}% {}]",
-                (percent*(branch.quantity/100.0)*100.0).round()/100.0,
+                (percent * (branch.quantity / 100.0) * 100.0).round() / 100.0,
                 compound.get_internal_name().to_ascii_uppercase()
             );
 
@@ -155,7 +162,7 @@ fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32) -> (Chemical, Str
                 &branch.chemical,
                 format!(
                     "({}% {}) ",
-                    (percent*(branch.quantity/100.0)*100.0).round()/100.0,
+                    (percent * (branch.quantity / 100.0) * 100.0).round() / 100.0,
                     base.get_id().to_ascii_uppercase()
                 ),
             );
@@ -163,9 +170,13 @@ fn print_branch(branch: ChemTreeNode, layer: i8, percent: f32) -> (Chemical, Str
         Chemical::Ingredient(ingredient) => {
             result = (
                 &branch.chemical,
-                format!("<{}% \"{}\"> ", (percent*(branch.quantity/100.0)*100.0).round()/100.0, ingredient.get_id()),
+                format!(
+                    "<{}% \"{}\"> ",
+                    (percent * (branch.quantity / 100.0) * 100.0).round() / 100.0,
+                    ingredient.get_id()
+                ),
             );
         }
     }
-    return (result.0.clone(), result.1)
+    return (result.0.clone(), result.1);
 }

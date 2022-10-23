@@ -1,6 +1,10 @@
-use std::{io, collections::HashMap};
+use std::{collections::HashMap, io};
 
-use data::{search_engine::*, chemicals::{BASES_MAP, BASES}, chem_tree::ChemTree};
+use data::{
+    chem_tree::ChemTree,
+    chemicals::{BASES, BASES_MAP},
+    search_engine::*,
+};
 
 use crate::print::print_dispenser_format;
 
@@ -19,43 +23,20 @@ pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
         } else if !clean.is_empty() && clean.chars().next().unwrap() == '/' {
             let command = &clean[1..clean.len()];
             let words: Vec<&str> = command.split_ascii_whitespace().collect();
-            match words.first(){
-                Some(w) =>{
-                    match w.to_lowercase().as_str() {
-                        "q" | "quit" => { break 'cli }
-                        "h" | "help" => { 
-                            println!("\nCommands:\n\n/(r)equires - Displays all reactions required by given chem.");
-                            println!("/(b)ases - Displays all bases used in-game.");  
-                            println!("/(h)elp - Displays this help page.");  
-                            println!("/(q)uit - Quits the program."); 
+            match words.first() {
+                Some(w) => match w.to_lowercase().as_str() {
+                    "q" | "quit" => break 'cli,
+                    "h" | "help" => print_help(),
+                    "b" | "bases" => println!("Available Bases: {:?}", BASES),
+                    "r" | "requires" => match words.get(1) {
+                        Some(w) => {
+                            requires(maps, w);
                         }
-                        "b" | "bases" => println!("Available Bases: {:?}", BASES),
-                        "r" | "requires" => {
-                            match words.get(1) {
-                                Some(w) => { 
-                                    let lookup = match BASES_MAP.get(w){
-                                        Some(_) => w.to_string(),
-                                    
-                                        None => fuzzy_search(&w.to_string(), &maps),
-                                    };
-                                    let uses = maps.uses_map.get(&lookup);
-                                    match uses {
-                                        Some(r) => {
-                                            println!("\"{}\" is required by {:?}", lookup, r)
-                                    },
-                                        None => println!("\"{}\" is required by nothing.", lookup)
-                                    }
-
-                                },
-                                None => println!("This command requires an argument!")
-                            }
-    
-                        }
-                        _ => println!("Unkown command: {:?}", words)
-                    }
-                }
-                None => println!("Missing command after /")
-                
+                        None => println!("This command requires an argument!"),
+                    },
+                    _ => println!("Unknown command: {:?}", words),
+                },
+                None => println!("Missing command after /"),
             }
         } else {
             //check if result and reaction are same to prevent ignoring alternate recipes seperately defined
@@ -85,4 +66,28 @@ pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
             }
         }
     }
+}
+
+fn requires(maps: &Maps, w: &str) {
+    let lookup = match BASES_MAP.get(w) {
+        Some(_) => w.to_string(),
+
+        None => fuzzy_search(&w.to_string(), &maps),
+    };
+    let uses = maps.uses_map.get(&lookup);
+    match uses {
+        Some(r) => {
+            println!("\"{}\" is required by {:?}", lookup, r)
+        }
+        None => println!("\"{}\" is required by nothing.", lookup),
+    }
+}
+
+fn print_help() {
+    println!("\nCommands:\n---------");
+    println!("/(r)equires\n\t\tDisplays all reactions required by given chem.");
+    println!("/(b)ases\n\t\tDisplays all bases used in-game.");
+    println!("/(h)elp\n\t\tDisplays this help page.");
+    println!("/(q)uit\n\t\tQuits the program.");
+    println!("---------");
 }
