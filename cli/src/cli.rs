@@ -11,6 +11,8 @@ use crate::print::print_dispenser_format;
 pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
     let mut toggle = false;
 
+    println!("Welcome to gwep chem finder!");
+    println!("Available Bases: {:?}", BASES);
     'cli: loop {
         println!("Enter your input, or type '/help' to see commands");
         let mut user_input = String::new();

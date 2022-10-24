@@ -2,13 +2,13 @@ use std::collections::HashMap;
 
 use clap::Parser;
 use cli::cli::start_cli;
+use config::settings::initialize_settings;
 use data::chem_tree::ChemTree;
 use data::chemicals::*;
 use data::fetch::update;
 use data::initialize_maps::initialize_compound_tree;
 use data::local::data_exists;
 use data::search_engine::*;
-use settings::settings::{initialize_settings, Settings};
 extern crate pest;
 extern crate pest_derive;
 
@@ -25,10 +25,9 @@ struct Args {
 }
 
 fn main() {
-    println!("Welcome to gwep chem finder!");
-    println!("Available Bases: {:?}", BASES);
-
     let settings = initialize_settings();
+
+    println!("{:?}", settings);
 
     let args = Args::parse();
 

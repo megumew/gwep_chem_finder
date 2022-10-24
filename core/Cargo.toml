@@ -9,7 +9,7 @@ build = "build.rs"
 [dependencies]
 data = { path = "../data" }
 cli = { path = "../cli" }
-settings = { path = "../settings" }
+config = { path = "../config" }
 pest = "2.3.0"
 pest_derive = "2.3.0"
 clap = { version = "4.0.17", features = ["derive"] }

@@ -9,6 +9,7 @@ use serde::Serialize;
 
 static SETTINGS_PATH: &str = "settings/";
 
+#[derive(Debug)]
 pub struct Settings {
     profile_name: String,
     beaker_type: BeakerType,
@@ -29,7 +30,15 @@ impl Settings {
         perfect_beaker: bool,
         full_reagent_beaker: bool,
     ) -> Self {
-        let beaker_type = BeakerType::LargeBeaker;
+        let beaker_type = match beaker_string.as_str() {
+            "SmallBeaker" => BeakerType::SmallBeaker,
+            "LargeBeaker" => BeakerType::LargeBeaker,
+            "Other" => BeakerType::Other,
+            _ => {
+                println!("Error reading the beaker type from settings... Please only use SmallBeaker, LargeBeaker, or Other... Defaulting to large beaker");
+                BeakerType::LargeBeaker
+            }
+        };
         Settings {
             profile_name,
             beaker_type,
@@ -92,6 +101,7 @@ impl SettingsToml {
     }
 }
 
+#[derive(Debug)]
 pub enum BeakerType {
     SmallBeaker,
     LargeBeaker,
@@ -103,16 +113,11 @@ pub fn initialize_settings() -> Settings {
 
     if path.exists() {
         println!("Settings folder exists!");
-        let mut setting_files = fs::read_dir(path).unwrap();
-        if setting_files.next().is_none() {
+        if fs::read_dir(path).unwrap().next().is_none() {
             println!("Settings folder is empty.");
             match write_default_config() {
                 Ok(_) => println!("Success!"),
                 Err(e) => eprintln!("Error occured: {}", e),
-            }
-        } else {
-            for file in setting_files {
-                println!("{:?}", file.unwrap().file_name())
             }
         }
     } else {
@@ -123,6 +128,26 @@ pub fn initialize_settings() -> Settings {
             Err(e) => eprintln!("Error occured: {}", e),
         }
     }
+
+    let setting_files = fs::read_dir(path).unwrap();
+    let mut setting_choice = Vec::new();
+
+    for element in std::path::Path::new(path).read_dir().unwrap() {
+        let path = element.unwrap().path();
+        if let Some(extension) = path.extension() {
+            if extension == "toml" {
+                setting_choice.push(path);
+            }
+        }
+    }
+
+    for path in setting_choice {
+        match path.file_name() {
+            Some(name) => println!("Name: {:?}", name),
+            None => panic!("Settings file had no name!"),
+        }
+    }
+
     Settings::default()
 }
 

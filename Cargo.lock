@@ -109,6 +109,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "config"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "toml",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -277,10 +285,10 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "cli",
+ "config",
  "data",
  "pest",
  "pest_derive",
- "settings",
  "winres",
 ]
 
@@ -820,14 +828,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "settings"
-version = "0.1.0"
-dependencies = [
- "serde",
- "toml",
 ]
 
 [[package]]
