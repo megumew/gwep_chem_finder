@@ -280,6 +280,7 @@ dependencies = [
  "data",
  "pest",
  "pest_derive",
+ "settings",
  "winres",
 ]
 
@@ -820,6 +821,10 @@ dependencies = [
  "ryu",
  "serde",
 ]
+
+[[package]]
+name = "settings"
+version = "0.1.0"
 
 [[package]]
 name = "sha1"

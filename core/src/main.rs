@@ -8,6 +8,7 @@ use data::fetch::update;
 use data::initialize_maps::initialize_compound_tree;
 use data::local::data_exists;
 use data::search_engine::*;
+use settings::settings::{initialize_settings, Settings};
 extern crate pest;
 extern crate pest_derive;
 
@@ -26,6 +27,8 @@ struct Args {
 fn main() {
     println!("Welcome to gwep chem finder!");
     println!("Available Bases: {:?}", BASES);
+
+    let settings = initialize_settings();
 
     let args = Args::parse();
 
