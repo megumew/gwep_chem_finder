@@ -1,7 +1,3 @@
 [workspace]
 
-members = [
-    "core",
-    "data",
-    "cli",
-]
+members = ["core", "data", "cli"]

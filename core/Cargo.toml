@@ -1,13 +1,17 @@
 [package]
-name = "core"
+name = "gwep_chem_finder"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-data = {path = "../data"}
-cli = {path = "../cli"}
+data = { path = "../data" }
+cli = { path = "../cli" }
 pest = "2.3.0"
 pest_derive = "2.3.0"
-clap = {version = "4.0.17", features = ["derive"]}
+clap = { version = "4.0.17", features = ["derive"] }
+
+[build-dependencies]
+winres = "0.1.12"
