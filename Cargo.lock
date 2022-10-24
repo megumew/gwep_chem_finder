@@ -825,6 +825,10 @@ dependencies = [
 [[package]]
 name = "settings"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "toml",
+]
 
 [[package]]
 name = "sha1"
