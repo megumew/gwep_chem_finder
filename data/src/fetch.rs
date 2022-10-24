@@ -36,6 +36,7 @@ pub fn update() -> (String, bool) {
             (path_string, false)
         }
     } else {
+        fs::create_dir_all("data/").expect("Failed to create folder!");
         let mut file = File::create(PATH).expect("Error while creating file");
         write!(file, "{}", git_file).expect("Failed to write to file");
         (path_string, true)
