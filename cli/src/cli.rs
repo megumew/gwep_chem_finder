@@ -1,5 +1,6 @@
 use std::{collections::HashMap, io};
 
+use config::settings::Settings;
 use data::{
     chem_tree::ChemTree,
     chemicals::{BASES, BASES_MAP},
@@ -8,8 +9,12 @@ use data::{
 
 use crate::print::print_dispenser_format;
 
-pub fn start_cli(maps: &Maps, reaction_trees: &Box<HashMap<String, ChemTree>>) {
-    let mut toggle = false;
+pub fn start_cli(
+    maps: &Maps,
+    reaction_trees: &Box<HashMap<String, ChemTree>>,
+    settings: &mut Settings,
+) {
+    let mut toggle = settings.percent_toggle;
 
     println!("Welcome to gwep chem finder!");
     println!("Available Bases: {:?}", BASES);

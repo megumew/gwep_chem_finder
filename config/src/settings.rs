@@ -11,20 +11,22 @@ static SETTINGS_PATH: &str = "settings/";
 
 #[derive(Debug)]
 pub struct Settings {
-    profile_name: String,
-    beaker_type: BeakerType,
-    beaker_mode: bool,
-    emulate_human: bool,
-    easy_beaker: bool,
-    perfect_beaker: bool,
-    full_reagent_beaker: bool,
+    pub profile_name: String,
+    pub percent_toggle: bool,
+    pub beaker_mode: bool,
+    pub beaker_type: BeakerType,
+    pub emulate_human: bool,
+    pub easy_beaker: bool,
+    pub perfect_beaker: bool,
+    pub full_reagent_beaker: bool,
 }
 
 impl Settings {
     pub fn new(
         profile_name: String,
-        beaker_string: String,
         beaker_mode: bool,
+        percent_toggle: bool,
+        beaker_string: String,
         emulate_human: bool,
         easy_beaker: bool,
         perfect_beaker: bool,
@@ -41,8 +43,9 @@ impl Settings {
         };
         Settings {
             profile_name,
-            beaker_type,
+            percent_toggle,
             beaker_mode,
+            beaker_type,
             emulate_human,
             easy_beaker,
             perfect_beaker,
@@ -53,6 +56,7 @@ impl Settings {
     pub fn default() -> Self {
         Settings {
             profile_name: "DefaultProfile".to_string(),
+            percent_toggle: false,
             beaker_type: BeakerType::LargeBeaker,
             beaker_mode: false,
             emulate_human: false,

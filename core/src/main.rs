@@ -2,9 +2,8 @@ use std::collections::HashMap;
 
 use clap::Parser;
 use cli::cli::start_cli;
-use config::settings::initialize_settings;
+use config::settings::{initialize_settings, Settings};
 use data::chem_tree::ChemTree;
-use data::chemicals::*;
 use data::fetch::update;
 use data::initialize_maps::initialize_compound_tree;
 use data::local::data_exists;
@@ -22,13 +21,12 @@ struct Args {
     ///Runs the program in CLI mode
     #[arg(short, long)]
     cli: bool,
+    ///Starts with default settings
+    #[arg(short, long)]
+    default: bool,
 }
 
 fn main() {
-    let settings = initialize_settings();
-
-    println!("{:?}", settings);
-
     let args = Args::parse();
 
     let update_result = update();
@@ -53,6 +51,14 @@ fn main() {
 
     // Command Line Interface for looking up Compounds
     if args.cli {
-        start_cli(&maps, &reaction_trees);
+        let mut settings;
+        if args.default {
+            settings = Settings::default();
+        } else {
+            settings = initialize_settings();
+        }
+
+        println!("{:?}", settings);
+        start_cli(&maps, &reaction_trees, &mut settings);
     }
 }
