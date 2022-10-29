@@ -42,7 +42,7 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
         let mut hidden: bool = false;
 
         let mut id: String = String::new();
-        let mut raw_reagents: Vec<RawReagent> = Vec::new();
+        let mut raw_reagents: Vec<Reagent> = Vec::new();
         let mut result_amount: f32 = 0.0;
 
         for line in pair.into_inner() {
@@ -106,9 +106,10 @@ fn to_struct(pairs: Vec<pest::iterators::Pair<Rule>>) -> Vec<Reaction> {
                                 let chem = chem_data.into_inner().next().unwrap();
                                 let num = data_iter.next().unwrap();
 
-                                raw_reagents.push(RawReagent::new(
+                                raw_reagents.push(Reagent::new(
                                     String::from(chem.as_str()),
                                     num.as_str().parse::<u32>().unwrap(),
+                                    Chemical::Ingredient // might wanna fix later
                                 ))
                             }
                         }
