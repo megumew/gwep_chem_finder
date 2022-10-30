@@ -53,9 +53,17 @@ pub async fn reaction_search(input: &String) -> Result<Vec<String>, sqlx::Error>
     let mut strings: Vec<String> = Vec::new();
 
     let mut clean = input.to_string();
-    if input.len() > 10 {
-        clean.truncate(10)
+    if input.len() > 20 {
+        clean.truncate(20)
     }
+    clean = clean.replace(" ", "_");
+    clean = clean.replace("-", "_");
+
+    match search_reaction_perfect_match(&clean).await {
+        Ok(string) => return Ok(vec![string]),
+        Err(_) => {}
+    }
+
     strings = search_reaction_starts_with(&clean, strings).await?;
     strings = search_reaction_multi_starts_with(&clean, strings).await?;
 
@@ -78,6 +86,39 @@ pub async fn reaction_search(input: &String) -> Result<Vec<String>, sqlx::Error>
     }
 
     Err(sqlx::Error::RowNotFound)
+}
+
+async fn search_reaction_perfect_match(input: &String) -> Result<String, sqlx::Error> {
+    dotenvy::dotenv().ok();
+
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
+
+    let mut conn = SqliteConnectOptions::from_str(env)?
+        .journal_mode(SqliteJournalMode::Wal)
+        .connect()
+        .await?;
+
+    let perfect_match = sqlx::query!(
+        r#"
+        SELECT internal_name
+        FROM reactions
+        WHERE internal_name LIKE ?
+        OR result LIKE ?
+        OR NAME LIKE ?
+        ORDER BY internal_name ASC;
+        "#,
+        input,
+        input,
+        input
+    )
+    .fetch_optional(&mut conn)
+    .await?;
+
+    if let Some(r#match) = perfect_match {
+        return Ok(r#match.internal_name.unwrap())
+    };
+
+    return Err(sqlx::Error::RowNotFound)
 }
 
 async fn search_reaction_starts_with(
@@ -354,8 +395,15 @@ pub async fn reagent_search(input: &String) -> Result<Vec<String>, sqlx::Error> 
     let mut strings: Vec<String> = Vec::new();
 
     let mut clean = input.to_string();
-    if input.len() > 10 {
-        clean.truncate(10)
+    if input.len() > 20 {
+        clean.truncate(20)
+    }
+    clean = clean.replace(" ", "_");
+    clean = clean.replace("-", "_");
+
+    match search_reagent_perfect_match(&clean).await {
+        Ok(string) => return Ok(vec![string]),
+        Err(_) => {}
     }
 
     strings = search_reagent_starts_with(&clean, strings).await?;
@@ -382,6 +430,46 @@ pub async fn reagent_search(input: &String) -> Result<Vec<String>, sqlx::Error> 
     Err(sqlx::Error::RowNotFound)
 }
 
+async fn search_reagent_perfect_match(input: &String) -> Result<String, sqlx::Error> {
+    dotenvy::dotenv().ok();
+
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
+
+    let mut conn = SqliteConnectOptions::from_str(env)?
+        .journal_mode(SqliteJournalMode::Wal)
+        .connect()
+        .await?;
+
+    let perfect_match = sqlx::query!(
+        r#"
+        SELECT internal_name as name
+        FROM reactions
+        WHERE internal_name LIKE ?
+        OR result LIKE ?
+        OR NAME LIKE ?
+        UNION ALL
+        SELECT name
+        FROM reagents
+        WHERE name LIKE ?
+        ORDER BY name ASC;
+        "#,
+        input,
+        input,
+        input,
+        input
+    )
+    .fetch_optional(&mut conn)
+    .await?;
+
+    println!("{:?}", perfect_match);
+
+    if let Some(r#match) = perfect_match {
+        return Ok(r#match.name.unwrap())
+    };
+
+    return Err(sqlx::Error::RowNotFound)
+}
+
 async fn search_reagent_starts_with(
     input: &String,
     mut strings: Vec<String>,
@@ -402,8 +490,17 @@ async fn search_reagent_starts_with(
         SELECT name
         FROM reagents
         WHERE name LIKE ?
+        UNION
+        SELECT internal_name as name
+        FROM reactions
+        WHERE internal_name LIKE ?
+        OR result LIKE ?
+        OR NAME LIKE ?
         ORDER BY name ASC;
         "#,
+        formatted,
+        formatted,
+        formatted,
         formatted
     )
     .fetch_all(&mut conn)
@@ -439,8 +536,17 @@ async fn search_reagent_multi_starts_with(
         SELECT name
         FROM reagents
         WHERE name LIKE ? ESCAPE '\'
+        UNION
+        SELECT internal_name as name
+        FROM reactions
+        WHERE internal_name LIKE ? ESCAPE '\'
+        OR result LIKE ? ESCAPE '\'
+        OR NAME LIKE ? ESCAPE '\'
         ORDER BY name ASC;
         "#,
+        formatted,
+        formatted,
+        formatted,
         formatted
     )
     .fetch_all(&mut conn)
@@ -453,8 +559,17 @@ async fn search_reagent_multi_starts_with(
         SELECT name
         FROM reagents
         WHERE name LIKE ? ESCAPE '\'
+        UNION
+        SELECT internal_name as name
+        FROM reactions
+        WHERE internal_name LIKE ? ESCAPE '\'
+        OR result LIKE ? ESCAPE '\'
+        OR NAME LIKE ? ESCAPE '\'
         ORDER BY name ASC;
         "#,
+        formatted2,
+        formatted2,
+        formatted2,
         formatted2
     )
     .fetch_all(&mut conn)
@@ -467,8 +582,17 @@ async fn search_reagent_multi_starts_with(
         SELECT name
         FROM reagents
         WHERE name LIKE ? ESCAPE '\'
+        UNION
+        SELECT internal_name as name
+        FROM reactions
+        WHERE internal_name LIKE ? ESCAPE '\'
+        OR result LIKE ? ESCAPE '\'
+        OR NAME LIKE ? ESCAPE '\'
         ORDER BY name ASC;
         "#,
+        formatted3,
+        formatted3,
+        formatted3,
         formatted3
     )
     .fetch_all(&mut conn)
@@ -518,8 +642,17 @@ async fn search_reagent_contains(
         SELECT name
         FROM reagents
         WHERE name LIKE ?
+        UNION
+        SELECT internal_name as name
+        FROM reactions
+        WHERE internal_name LIKE ?
+        OR result LIKE ?
+        OR NAME LIKE ?
         ORDER BY name ASC;
         "#,
+        formatted,
+        formatted,
+        formatted,
         formatted
     )
     .fetch_all(&mut conn)

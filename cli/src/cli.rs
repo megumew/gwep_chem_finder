@@ -37,8 +37,8 @@ pub fn start_cli() {
                     "h" | "help" => print_help(),
                     "b" | "bases" => println!("Available Bases: {:?}", BASES),
                     "r" | "requires" => match words.get(1) {
-                        Some(w) => {
-                            requires(w);
+                        Some(_) => {
+                            requires(words[1..words.len()].join(" ").as_str());
                         }
                         None => println!("This command requires an argument!"),
                     },
@@ -50,7 +50,11 @@ pub fn start_cli() {
             let search = reaction_search(&clean);
             match search {
                 Ok(s) => {
-                    let fuzzy = collision_select(&s);
+                    let fuzzy =  if s.len() > 1 {
+                        collision_select(&s)
+                    } else {
+                        s[0].to_string()
+                    };
                     let search_result = fetch_reaction(fuzzy);
                     print_dispenser_format(search_result, toggle);
                 }
@@ -64,13 +68,21 @@ fn requires(w: &str) {
     let lookup = if BASES.contains(&w) {
         w.to_string()
     } else {
-        collision_select(&reagent_search(&w.to_string()).unwrap())
+        let reagent_search = reagent_search(&w.to_string()).unwrap();
+        if reagent_search.len() > 1 {
+            collision_select(&reagent_search)
+        } else {
+            reagent_search[0].to_string()
+        }
     };
     let uses = reagent_uses(lookup.clone());
     match uses {
         Ok(list) => {
-            println!("\"{}\" is required by {:?}", lookup, list);
-            // println!("\"{}\" is required by nothing.", lookup),
+            if list.len() > 0 {
+                println!("\"{}\" is required by {:?}", lookup, list);
+            } else {
+                println!("\"{}\" is required by nothing.", lookup);
+            }
         }
         Err(e) => println!("Error: {}", e),
     }

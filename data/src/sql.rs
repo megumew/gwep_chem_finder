@@ -146,7 +146,8 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
         let reaction = reactions[index].clone();
         let internal_name = reaction.get_internal_name();
         reaction_list.push(internal_name.clone());
-        let name = reaction.get_name();
+        let mut name = reaction.get_name().to_lowercase();
+        name = name.replace("-", " ");
         let result = reaction.get_result();
         let mix_phrase = reaction.get_mix_phrase();
         let instant = reaction.is_instant();
