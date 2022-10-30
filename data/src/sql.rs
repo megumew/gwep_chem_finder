@@ -1,21 +1,22 @@
+use crate::chemicals::{Chemical, Reaction, Reagent, Recipe, BASES};
 use async_recursion::async_recursion;
-use sqlx::ConnectOptions;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
+use sqlx::ConnectOptions;
 use std::str::FromStr;
-use crate::chemicals::{Reaction, BASES, Recipe, Reagent, Chemical};
 
 #[tokio::main]
-pub async fn get_all_reactions() -> Result<Vec<Reaction>, sqlx::Error > {
+pub async fn get_all_reactions() -> Result<Vec<Reaction>, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    //std::env::set_var("DATABASE_URL", "sqlite://data/data.db");
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut reactions: Vec<Reaction> = Vec::new();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let internal_names = sqlx::query!(
         "
@@ -26,8 +27,10 @@ pub async fn get_all_reactions() -> Result<Vec<Reaction>, sqlx::Error > {
     .fetch_all(&mut conn)
     .await?;
 
-    for name in internal_names.iter().map(|i| i.internal_name.as_ref().unwrap()) {
-
+    for name in internal_names
+        .iter()
+        .map(|i| i.internal_name.as_ref().unwrap())
+    {
         let reaction = get_reaction(name.clone()).await?;
 
         reactions.push(reaction);
@@ -39,12 +42,13 @@ pub async fn get_all_reactions() -> Result<Vec<Reaction>, sqlx::Error > {
 async fn get_reaction(internal_name: String) -> Result<Reaction, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    //std::env::set_var("DATABASE_URL", "sqlite://data/data.db");
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let recipes = sqlx::query!(
         r#"
@@ -76,15 +80,15 @@ async fn get_reaction(internal_name: String) -> Result<Reaction, sqlx::Error> {
             let ingredient_type = match reagent.ingredient_type.as_str() {
                 "base" => Chemical::Base,
                 "compound" => Chemical::Compound(get_reaction(reagent.name.clone()).await?),
-                _ => Chemical::Ingredient
+                _ => Chemical::Ingredient,
             };
-            recipes_reagents.push(Reagent::new(reagent.name.clone(), reagent.amount as u32, ingredient_type))
+            recipes_reagents.push(Reagent::new(
+                reagent.name.clone(),
+                reagent.amount as u32,
+                ingredient_type,
+            ))
         }
-        let struc = Recipe::new(
-            recipe.id,
-            recipes_reagents,
-            recipe.result_amount as f32, 
-        );
+        let struc = Recipe::new(recipe.id, recipes_reagents, recipe.result_amount as f32);
         recipe_list.push(struc);
     }
     let reaction_query = sqlx::query!(
@@ -101,8 +105,8 @@ async fn get_reaction(internal_name: String) -> Result<Reaction, sqlx::Error> {
     let required_temp: Option<f32>;
 
     match reaction_query.required_temp {
-        Some(temp) => { required_temp = Some(temp as f32)}
-        _ => { required_temp = None }
+        Some(temp) => required_temp = Some(temp as f32),
+        _ => required_temp = None,
     }
 
     let reaction = Reaction::new(
@@ -113,7 +117,7 @@ async fn get_reaction(internal_name: String) -> Result<Reaction, sqlx::Error> {
         reaction_query.mix_phrase,
         required_temp,
         reaction_query.instant,
-        reaction_query.hidden
+        reaction_query.hidden,
     );
     Ok(reaction)
 }
@@ -124,15 +128,16 @@ pub async fn fetch_reaction(internal_name: String) -> Reaction {
 }
 
 #[tokio::main]
-pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error > {
+pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    //std::env::set_var("DATABASE_URL", "sqlite://data/data.db");
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let mut reaction_list: Vec<String> = Vec::new();
 
@@ -158,9 +163,9 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error > 
             mix_phrase,
             instant,
             hidden
-            )
-            .execute(&mut conn)
-            .await?;
+        )
+        .execute(&mut conn)
+        .await?;
 
         if let Some(temp) = reaction.get_required_temp() {
             sqlx::query!(
@@ -170,9 +175,9 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error > 
                 "#,
                 temp,
                 internal_name,
-                )
-                .execute(&mut conn)
-                .await?;
+            )
+            .execute(&mut conn)
+            .await?;
         }
         for num in 0..reaction.recipe_amount() {
             let recipe_index = num as i32;
@@ -188,11 +193,11 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error > 
                 id,
                 first_counter,
                 result_amount,
-                )
-                .execute(&mut conn)
-                .await?;
-            
-        first_counter += 1;
+            )
+            .execute(&mut conn)
+            .await?;
+
+            first_counter += 1;
         }
     }
     let mut second_counter: i32 = 0;
@@ -210,10 +215,9 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error > 
                     second_counter,
                     name,
                     amount,
-                    )
-                    
-                    .execute(&mut conn)
-                    .await?;
+                )
+                .execute(&mut conn)
+                .await?;
                 if reaction_list.contains(&name) {
                     sqlx::query!(
                         r#"UPDATE reagents
@@ -222,9 +226,9 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error > 
                         "#,
                         name,
                         second_counter
-                        )
-                        .execute(&mut conn)
-                        .await?;
+                    )
+                    .execute(&mut conn)
+                    .await?;
                 } else if BASES.contains(&name.as_str()) {
                     sqlx::query!(
                         r#"UPDATE reagents
@@ -233,9 +237,9 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error > 
                         "#,
                         name,
                         second_counter
-                        )
-                        .execute(&mut conn)
-                        .await?;
+                    )
+                    .execute(&mut conn)
+                    .await?;
                 } else {
                 }
             }
@@ -247,32 +251,32 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error > 
 }
 
 #[tokio::main]
-pub async fn add_reactions(result: Result<(), sqlx::Error >) { 
+pub async fn add_reactions(result: Result<(), sqlx::Error>) {
     println!("{:?}", result)
 }
 
-
 #[tokio::main]
-pub async fn database() -> Result<(), sqlx::Error > {
+pub async fn database() -> Result<(), sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    //std::env::set_var("DATABASE_URL", "sqlite://data/data.db");
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .create_if_missing(true)
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     sqlx::query(
         "
         DROP TABLE IF EXISTS reagents;
         DROP TABLE IF EXISTS recipes;
         DROP TABLE IF EXISTS reactions;
-        "
-        )
-        .execute(&mut conn)
-        .await?;
+        ",
+    )
+    .execute(&mut conn)
+    .await?;
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS reactions (
@@ -283,10 +287,10 @@ pub async fn database() -> Result<(), sqlx::Error > {
                 required_temp FLOAT,
                 instant BOOLEAN NOT NULL,
                 hidden BOOLEAN NOT NULL
-            );"
-        )
-        .execute(&mut conn)
-        .await?;
+            );",
+    )
+    .execute(&mut conn)
+    .await?;
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS recipes (
@@ -296,10 +300,10 @@ pub async fn database() -> Result<(), sqlx::Error > {
                 id TEXT NOT NULL,
                 result_amount FLOAT NOT NULL,
                 FOREIGN KEY(reaction) REFERENCES reactions(internal_name)
-            );"
-        )
-        .execute(&mut conn)
-        .await?;
+            );",
+    )
+    .execute(&mut conn)
+    .await?;
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS reagents (
@@ -308,15 +312,15 @@ pub async fn database() -> Result<(), sqlx::Error > {
                 ingredient_type TEXT NOT NULL DEFAULT 'ingredient',
                 amount INT NOT NULL,
                 FOREIGN KEY(recipe) REFERENCES recipes(reagents)
-            );"
-        )
-        .execute(&mut conn)
-        .await?;
+            );",
+    )
+    .execute(&mut conn)
+    .await?;
 
     Ok(())
 }
 
 #[tokio::main]
-pub async fn setup_database(result: Result<(), sqlx::Error >) { 
+pub async fn setup_database(result: Result<(), sqlx::Error>) {
     println!("{:?}", result)
 }

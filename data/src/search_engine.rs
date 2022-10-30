@@ -1,18 +1,21 @@
-use sqlx::{sqlite::{SqliteConnectOptions, SqliteJournalMode}, ConnectOptions};
+use sqlx::{
+    sqlite::{SqliteConnectOptions, SqliteJournalMode},
+    ConnectOptions,
+};
 use std::{io, str::FromStr};
 
 #[tokio::main]
-pub async fn reagent_uses(reagent: String) -> Result<Vec<String>, sqlx::Error > {
+pub async fn reagent_uses(reagent: String) -> Result<Vec<String>, sqlx::Error> {
     let mut strings: Vec<String> = Vec::new();
 
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let search = sqlx::query!(
         r#"
@@ -46,7 +49,7 @@ pub async fn reagent_uses(reagent: String) -> Result<Vec<String>, sqlx::Error > 
 }
 
 #[tokio::main]
-pub async fn reaction_search(input: &String) -> Result<Vec<String>, sqlx::Error > {
+pub async fn reaction_search(input: &String) -> Result<Vec<String>, sqlx::Error> {
     let mut strings: Vec<String> = Vec::new();
 
     let mut clean = input.to_string();
@@ -57,35 +60,38 @@ pub async fn reaction_search(input: &String) -> Result<Vec<String>, sqlx::Error 
     strings = search_reaction_multi_starts_with(&clean, strings).await?;
 
     if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec())
+        return Ok(strings[0..5].to_vec());
     }
 
     strings = search_reaction_contains(&clean, strings).await?;
 
     if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec())
-    } 
+        return Ok(strings[0..5].to_vec());
+    }
 
     strings = search_typos(&clean, strings, true).await?;
 
     if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec())
+        return Ok(strings[0..5].to_vec());
     } else if strings.len() > 0 {
-        return Ok(strings)
+        return Ok(strings);
     }
 
     Err(sqlx::Error::RowNotFound)
 }
 
-async fn search_reaction_starts_with(input: &String, mut strings: Vec<String>) -> Result<Vec<String>, sqlx::Error > {
+async fn search_reaction_starts_with(
+    input: &String,
+    mut strings: Vec<String>,
+) -> Result<Vec<String>, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let formatted = format!("{}%", input);
 
@@ -146,15 +152,18 @@ async fn search_reaction_starts_with(input: &String, mut strings: Vec<String>) -
     Ok(strings)
 }
 
-async fn search_reaction_multi_starts_with(input: &String, mut strings: Vec<String>) -> Result<Vec<String>, sqlx::Error > {
+async fn search_reaction_multi_starts_with(
+    input: &String,
+    mut strings: Vec<String>,
+) -> Result<Vec<String>, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let formatted = format!(r"%\_{}%", input);
 
@@ -198,7 +207,7 @@ async fn search_reaction_multi_starts_with(input: &String, mut strings: Vec<Stri
         ORDER BY internal_name ASC;
         "#,
         formatted_hyphen
-        )
+    )
     .fetch_all(&mut conn)
     .await?;
 
@@ -223,15 +232,18 @@ async fn search_reaction_multi_starts_with(input: &String, mut strings: Vec<Stri
     Ok(strings)
 }
 
-async fn search_reaction_contains(input: &String, mut strings: Vec<String>) -> Result<Vec<String>, sqlx::Error > {
+async fn search_reaction_contains(
+    input: &String,
+    mut strings: Vec<String>,
+) -> Result<Vec<String>, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let formatted = format!("%{}%", input);
 
@@ -293,16 +305,19 @@ async fn search_reaction_contains(input: &String, mut strings: Vec<String>) -> R
     Ok(strings)
 }
 
-/* 
+/*
 - Replaces characters in input with '_' representing any possible single character (or lack thereof), then searches through all other searches
-- Checks in reverse order of string, so if searching for "blood", searching "bloop", "bloed", etc. will give better results than "flood". 
+- Checks in reverse order of string, so if searching for "blood", searching "bloop", "bloed", etc. will give better results than "flood".
 - Likewise, searching "flood", a single letter typo, will give better results than "bloea", "blaad", "breod", two letter typos.
 - Catches incorrect string lengths as well, but their priority is lowered.
 - Searching "blooood" hits "blood" on loop 2-2, due to looking up "bloo__d" hitting "blood"
 - Typo search is O(n²) at minimum until it hits at least 5 results so input length is limited to 10 characters
 */
-async fn search_typos(input: &String, mut strings: Vec<String>, reaction: bool) -> Result<Vec<String>, sqlx::Error > {
-
+async fn search_typos(
+    input: &String,
+    mut strings: Vec<String>,
+    reaction: bool,
+) -> Result<Vec<String>, sqlx::Error> {
     // Prevents underflow
     // Was thinking about doing input / x but doing this and truncating the input when it's received leads to a wider range of results
     let mut reserved_length = input.len() as i32 - 2;
@@ -314,7 +329,7 @@ async fn search_typos(input: &String, mut strings: Vec<String>, reaction: bool) 
         for index in (length..input.len()).rev() {
             let mut new_input = input.clone();
             new_input.replace_range(index - length..index + 1, "_");
-    
+
             if reaction {
                 strings = search_reaction_starts_with(&new_input, strings).await?;
                 strings = search_reaction_multi_starts_with(&new_input, strings).await?;
@@ -324,9 +339,9 @@ async fn search_typos(input: &String, mut strings: Vec<String>, reaction: bool) 
                 strings = search_reagent_multi_starts_with(&new_input, strings).await?;
                 strings = search_reagent_contains(&new_input, strings).await?;
             }
-    
+
             if strings.len() >= 5 {
-                return Ok(strings[0..5].to_vec())
+                return Ok(strings[0..5].to_vec());
             }
         }
     }
@@ -335,7 +350,7 @@ async fn search_typos(input: &String, mut strings: Vec<String>, reaction: bool) 
 }
 
 #[tokio::main]
-pub async fn reagent_search(input: &String) -> Result<Vec<String>, sqlx::Error > {
+pub async fn reagent_search(input: &String) -> Result<Vec<String>, sqlx::Error> {
     let mut strings: Vec<String> = Vec::new();
 
     let mut clean = input.to_string();
@@ -347,35 +362,38 @@ pub async fn reagent_search(input: &String) -> Result<Vec<String>, sqlx::Error >
     strings = search_reagent_multi_starts_with(&clean, strings).await?;
 
     if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec())
+        return Ok(strings[0..5].to_vec());
     }
 
     strings = search_reagent_contains(&clean, strings).await?;
 
     if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec())
-    } 
+        return Ok(strings[0..5].to_vec());
+    }
 
     strings = search_typos(&clean, strings, false).await?;
 
     if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec())
+        return Ok(strings[0..5].to_vec());
     } else if strings.len() > 0 {
-        return Ok(strings)
+        return Ok(strings);
     }
 
     Err(sqlx::Error::RowNotFound)
 }
 
-async fn search_reagent_starts_with(input: &String, mut strings: Vec<String>) -> Result<Vec<String>, sqlx::Error > {
+async fn search_reagent_starts_with(
+    input: &String,
+    mut strings: Vec<String>,
+) -> Result<Vec<String>, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let formatted = format!("{}%", input);
 
@@ -397,19 +415,22 @@ async fn search_reagent_starts_with(input: &String, mut strings: Vec<String>) ->
             strings.push(unwrapped)
         }
     }
-   
+
     Ok(strings)
 }
 
-async fn search_reagent_multi_starts_with(input: &String, mut strings: Vec<String>) -> Result<Vec<String>, sqlx::Error > {
+async fn search_reagent_multi_starts_with(
+    input: &String,
+    mut strings: Vec<String>,
+) -> Result<Vec<String>, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let formatted = format!(r"%\_{}%", input);
 
@@ -477,15 +498,18 @@ async fn search_reagent_multi_starts_with(input: &String, mut strings: Vec<Strin
     Ok(strings)
 }
 
-async fn search_reagent_contains(input: &String, mut strings: Vec<String>) -> Result<Vec<String>, sqlx::Error > {
+async fn search_reagent_contains(
+    input: &String,
+    mut strings: Vec<String>,
+) -> Result<Vec<String>, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    std::env::set_var("DATABASE_URL", "sqlite://data.db");
-    let env = &std::env::var("DATABASE_URL").ok().unwrap();
+    let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
-        .connect().await?;
+        .connect()
+        .await?;
 
     let formatted = format!("%{}%", input);
 
