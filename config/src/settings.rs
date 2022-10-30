@@ -282,7 +282,26 @@ pub fn creation_wizard(profile_name: String) -> Settings {
 }
 
 fn select_beaker_type() -> BeakerType {
-    BeakerType::LargeBeaker
+    println!("(1) SmallBeaker (50u)\n(2) LargeBeaker(100u)\n(3) Other(120u)");
+    let mut user_input = String::new();
+    loop {
+        match io::stdin().read_line(&mut user_input) {
+            Ok(_) => match user_input.trim().parse::<usize>() {
+                Ok(i) => match i {
+                    1 => return BeakerType::SmallBeaker,
+                    2 => return BeakerType::LargeBeaker,
+                    3 => return BeakerType::Other,
+                    _ => println!("Please enter only a valid number!"),
+                },
+                Err(e) => {
+                    println!("Error: {}", e)
+                }
+            },
+            Err(e) => {
+                println!("Error: {}", e)
+            }
+        }
+    }
 }
 
 fn select_bool() -> bool {
