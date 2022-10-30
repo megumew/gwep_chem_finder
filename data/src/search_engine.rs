@@ -5,7 +5,7 @@ use sqlx::{
 use std::{io, str::FromStr};
 
 #[tokio::main]
-pub async fn reagent_uses(reagent: String) -> Result<Vec<String>, sqlx::Error> {
+pub async fn reagent_uses(mut reagent: String) -> Result<Vec<String>, sqlx::Error> {
     let mut strings: Vec<String> = Vec::new();
 
     dotenvy::dotenv().ok();
@@ -16,6 +16,24 @@ pub async fn reagent_uses(reagent: String) -> Result<Vec<String>, sqlx::Error> {
         .journal_mode(SqliteJournalMode::Wal)
         .connect()
         .await?;
+
+    /* Finds the key to lookup a reagent's use even if the reagent is a Compound and reagent.name != reaction.internal_name, but rather reagent.name == reaction.result */
+    let proper_reagent_name = sqlx::query!(
+        r#"
+        SELECT result
+        FROM reactions
+        WHERE internal_name LIKE ?
+        OR result LIKE ?;
+        "#,
+        reagent,
+        reagent
+    )
+    .fetch_optional(&mut conn)
+    .await?;
+    
+    if let Some(r#name) = proper_reagent_name {
+        reagent = name.result
+    }
 
     let search = sqlx::query!(
         r#"
@@ -442,16 +460,16 @@ async fn search_reagent_perfect_match(input: &String) -> Result<String, sqlx::Er
 
     let perfect_match = sqlx::query!(
         r#"
-        SELECT internal_name as name
+        SELECT internal_name as name, internal_name
         FROM reactions
         WHERE internal_name LIKE ?
         OR result LIKE ?
         OR NAME LIKE ?
         UNION ALL
-        SELECT name
+        SELECT name, length(name) as len
         FROM reagents
         WHERE name LIKE ?
-        ORDER BY name ASC;
+        ORDER BY len ASC;
         "#,
         input,
         input,

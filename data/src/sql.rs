@@ -131,7 +131,6 @@ pub async fn fetch_reaction(internal_name: String) -> Reaction {
 pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    //std::env::set_var("DATABASE_URL", "sqlite://data/data.db");
     let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
@@ -149,6 +148,7 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
         let mut name = reaction.get_name().to_lowercase();
         name = name.replace("-", " ");
         let result = reaction.get_result();
+        
         let mix_phrase = reaction.get_mix_phrase();
         let instant = reaction.is_instant();
         let hidden = reaction.is_hidden();
@@ -219,10 +219,10 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
                 )
                 .execute(&mut conn)
                 .await?;
-                if reaction_list.contains(&name) {
+                if BASES.contains(&name.as_str()) {
                     sqlx::query!(
                         r#"UPDATE reagents
-                        SET ingredient_type = 'compound'
+                        SET ingredient_type = 'base'
                         WHERE name LIKE ? AND recipe = ?
                         "#,
                         name,
@@ -230,10 +230,10 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
                     )
                     .execute(&mut conn)
                     .await?;
-                } else if BASES.contains(&name.as_str()) {
+                } else if reaction_list.contains(&name) {
                     sqlx::query!(
                         r#"UPDATE reagents
-                        SET ingredient_type = 'base'
+                        SET ingredient_type = 'compound'
                         WHERE name LIKE ? AND recipe = ?
                         "#,
                         name,
