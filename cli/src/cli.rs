@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io};
 
-use config::settings::Settings;
+use config::settings::{creation_wizard, Settings};
 use data::{
     chem_tree::ChemTree,
     chemicals::{BASES, BASES_MAP},
@@ -12,11 +12,16 @@ use crate::print::print_dispenser_format;
 pub fn start_cli(
     maps: &Maps,
     reaction_trees: &Box<HashMap<String, ChemTree>>,
-    settings: &mut Settings,
+    mut settings: Settings,
 ) {
     let mut toggle = settings.percent_toggle;
 
-    println!("Welcome to gwep chem finder!");
+    if settings.profile_name.is_empty() {
+        println!("Welcome to gwep chem finder!");
+    } else {
+        println!("Welcome to gwep chem finder, {}!", settings.profile_name);
+    }
+
     println!("Available Bases: {:?}", BASES);
     'cli: loop {
         println!("Enter your input, or type '/help' to see commands");
@@ -35,6 +40,17 @@ pub fn start_cli(
             match words.first() {
                 Some(w) => match w.to_lowercase().as_str() {
                     "q" | "quit" => break 'cli,
+                    "c" | "config" => {
+                        if !settings.profile_name.is_empty() {
+                            settings = creation_wizard(settings.profile_name)
+                        } else {
+                            match words.get(1) {
+                                Some(n) => settings = creation_wizard(n.to_string()),
+                                None => println!("Command is missing argument {{profile_name}}"),
+                            }
+                        }
+                    }
+                    "s" | "settings" => println!("{:?}", settings),
                     "t" | "toggle" => {
                         if toggle == true {
                             println!("Showing recipes without a %");
@@ -106,9 +122,16 @@ fn requires(maps: &Maps, w: &str) {
 
 fn print_help() {
     println!("\nCommands:\n---------");
+    println!("/(t)oggle\n\t\tToggles whether to show percentage or base values.");
+    println!("/(c)onfig {{profile_name}}\n\t\tChanges the users settings.");
     println!("/(r)equires\n\t\tDisplays all reactions required by given chem.");
     println!("/(b)ases\n\t\tDisplays all bases used in-game.");
     println!("/(h)elp\n\t\tDisplays this help page.");
     println!("/(q)uit\n\t\tQuits the program.");
     println!("---------");
+}
+
+fn clean_input(input: String) -> String {
+    let words: Vec<_> = input.split_whitespace().collect();
+    words.join(" ")
 }

@@ -51,7 +51,7 @@ fn main() {
 
     // Command Line Interface for looking up Compounds
     if args.cli {
-        let mut settings;
+        let settings;
         if args.default {
             settings = Settings::default();
         } else {
@@ -59,6 +59,6 @@ fn main() {
         }
 
         println!("{:?}", settings);
-        start_cli(&maps, &reaction_trees, &mut settings);
+        start_cli(&maps, &reaction_trees, settings);
     }
 }

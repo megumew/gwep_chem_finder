@@ -1,8 +1,0 @@
-[settings]
-profile_name = "DefaultProfile"
-beaker_type = "LargeBeaker"
-beaker_mode = false
-emulate_human = false
-easy_beaker = false
-perfect_beaker = false
-full_reagent_beaker = false

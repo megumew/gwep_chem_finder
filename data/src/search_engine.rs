@@ -199,11 +199,6 @@ fn score_diff(searched: &String, input: &String) -> (i32, String) {
     (total_diff, searched.to_string())
 }
 
-pub fn clean_input(input: String) -> String {
-    let words: Vec<_> = input.split_whitespace().collect();
-    words.join(" ")
-}
-
 pub fn collision_select(result: &Vec<String>) -> String {
     println!(
         "Found {} possible options. Please select one to continue.",
@@ -227,7 +222,7 @@ pub fn collision_select(result: &Vec<String>) -> String {
                         valid = true;
                     } else {
                         println!(
-                            "Please enter only a valid number! (range {}-{})",
+                            "Please enter only a valid number! (range: {}-{})",
                             1,
                             result.len()
                         );
