@@ -137,60 +137,34 @@ async fn search_reaction_starts_with(
 
     let formatted = format!("{}%", input);
 
-    let internal_name_search = sqlx::query!(
+    let search = sqlx::query!(
         r#"
         SELECT internal_name
         FROM reactions
         WHERE internal_name LIKE ?
-        ORDER BY internal_name ASC;
-        "#,
-        formatted
-    )
-    .fetch_all(&mut conn)
-    .await?;
-
-    let result_search = sqlx::query!(
-        r#"
+        UNION
         SELECT internal_name
         FROM reactions
         WHERE result LIKE ?
-        ORDER BY result ASC;
-        "#,
-        formatted
-    )
-    .fetch_all(&mut conn)
-    .await?;
-
-    let name_search = sqlx::query!(
-        r#"
+        UNION
         SELECT internal_name
         FROM reactions
-        WHERE name LIKE ?
-        ORDER BY name ASC;
+        WHERE name LIKE ?;
         "#,
+        formatted,
+        formatted,
         formatted
     )
     .fetch_all(&mut conn)
     .await?;
 
-    for output in internal_name_search {
+    for output in search {
         let unwrapped = output.internal_name.unwrap();
         if !strings.contains(&unwrapped) {
             strings.push(unwrapped)
         }
     }
-    for output in result_search {
-        let unwrapped = output.internal_name.unwrap();
-        if !strings.contains(&unwrapped) {
-            strings.push(unwrapped)
-        }
-    }
-    for output in name_search {
-        let unwrapped = output.internal_name.unwrap();
-        if !strings.contains(&unwrapped) {
-            strings.push(unwrapped)
-        }
-    }
+
     Ok(strings)
 }
 
@@ -208,69 +182,37 @@ async fn search_reaction_multi_starts_with(
         .await?;
 
     let formatted = format!(r"%\_{}%", input);
+    let formatted_space = format!("% {}%", input);
 
-    let underscore_search = sqlx::query!(
+    let search = sqlx::query!(
         r#"
         SELECT internal_name
         FROM reactions
         WHERE internal_name LIKE ? ESCAPE '\'
         OR result LIKE ? ESCAPE '\'
-        ORDER BY internal_name ASC;
-        "#,
-        formatted,
-        formatted
-    )
-    .fetch_all(&mut conn)
-    .await?;
-
-    let formatted_space = format!("% {}%", input);
-
-    let space_search = sqlx::query!(
-        r#"
+        OR name LIKE ? ESCAPE '\'
+        UNION
         SELECT internal_name
         FROM reactions
         WHERE name LIKE ?
-        OR result LIKE ?
-        ORDER BY name,result ASC;
+        OR result LIKE ?;
         "#,
+        formatted,
+        formatted,
+        formatted,
         formatted_space,
         formatted_space
     )
     .fetch_all(&mut conn)
     .await?;
 
-    let formatted_hyphen = format!("%-{}%", input);
+    for output in search {
+        let unwrapped = output.internal_name.unwrap();
+        if !strings.contains(&unwrapped) {
+            strings.push(unwrapped)
+        }
+    }
 
-    let hyphen_search = sqlx::query!(
-        r#"
-        SELECT internal_name
-        FROM reactions
-        WHERE name LIKE ?
-        ORDER BY internal_name ASC;
-        "#,
-        formatted_hyphen
-    )
-    .fetch_all(&mut conn)
-    .await?;
-
-    for output in underscore_search {
-        let unwrapped = output.internal_name.unwrap();
-        if !strings.contains(&unwrapped) {
-            strings.push(unwrapped)
-        }
-    }
-    for output in space_search {
-        let unwrapped = output.internal_name.unwrap();
-        if !strings.contains(&unwrapped) {
-            strings.push(unwrapped)
-        }
-    }
-    for output in hyphen_search {
-        let unwrapped = output.internal_name.unwrap();
-        if !strings.contains(&unwrapped) {
-            strings.push(unwrapped)
-        }
-    }
     Ok(strings)
 }
 
@@ -289,55 +231,28 @@ async fn search_reaction_contains(
 
     let formatted = format!("%{}%", input);
 
-    let internal_name_search = sqlx::query!(
+    let search = sqlx::query!(
         r#"
         SELECT internal_name
         FROM reactions
         WHERE internal_name LIKE ?
-        ORDER BY internal_name ASC;
-        "#,
-        formatted
-    )
-    .fetch_all(&mut conn)
-    .await?;
-
-    let result_search = sqlx::query!(
-        r#"
+        UNION
         SELECT internal_name
         FROM reactions
         WHERE result LIKE ?
-        ORDER BY result ASC;
-        "#,
-        formatted
-    )
-    .fetch_all(&mut conn)
-    .await?;
-
-    let name_search = sqlx::query!(
-        r#"
+        UNION 
         SELECT internal_name
         FROM reactions
-        WHERE name LIKE ?
-        ORDER BY name ASC;
+        WHERE name LIKE ?;
         "#,
+        formatted,
+        formatted,
         formatted
     )
     .fetch_all(&mut conn)
     .await?;
 
-    for output in internal_name_search {
-        let unwrapped = output.internal_name.unwrap();
-        if !strings.contains(&unwrapped) {
-            strings.push(unwrapped)
-        }
-    }
-    for output in result_search {
-        let unwrapped = output.internal_name.unwrap();
-        if !strings.contains(&unwrapped) {
-            strings.push(unwrapped)
-        }
-    }
-    for output in name_search {
+    for output in search {
         let unwrapped = output.internal_name.unwrap();
         if !strings.contains(&unwrapped) {
             strings.push(unwrapped)
