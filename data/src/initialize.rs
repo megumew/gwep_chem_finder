@@ -21,8 +21,8 @@ pub fn initialize(force_update: bool) {
 
     if updated || !data_exists(&data_string) || force_update {
         setup_database(database());
-        let reactions = parser::parse(path);
-        println!("There are {} compounds.", reactions.len());
-        serialize_to_sql(reactions);
+        let unfinished_reactions = parser::parse(path);
+        println!("There are {} compounds.", unfinished_reactions.len());
+        serialize_to_sql(unfinished_reactions);
     }
 }

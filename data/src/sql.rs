@@ -9,7 +9,6 @@ use std::str::FromStr;
 pub async fn get_all_reactions() -> Result<Vec<Reaction>, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    //std::env::set_var("DATABASE_URL", "sqlite://data/data.db");
     let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut reactions: Vec<Reaction> = Vec::new();

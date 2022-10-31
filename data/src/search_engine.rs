@@ -191,11 +191,8 @@ async fn search_reaction_multi_starts_with(
         WHERE internal_name LIKE ? ESCAPE '\'
         OR result LIKE ? ESCAPE '\'
         OR name LIKE ? ESCAPE '\'
-        UNION
-        SELECT internal_name
-        FROM reactions
-        WHERE name LIKE ?
-        OR result LIKE ?;
+        OR result LIKE ?
+        OR name LIKE ?;
         "#,
         formatted,
         formatted,
@@ -236,14 +233,8 @@ async fn search_reaction_contains(
         SELECT internal_name
         FROM reactions
         WHERE internal_name LIKE ?
-        UNION
-        SELECT internal_name
-        FROM reactions
-        WHERE result LIKE ?
-        UNION 
-        SELECT internal_name
-        FROM reactions
-        WHERE name LIKE ?;
+        OR result LIKE ?
+        OR name LIKE ?;
         "#,
         formatted,
         formatted,
@@ -363,7 +354,7 @@ async fn search_reagent_perfect_match(input: &String) -> Result<String, sqlx::Er
         WHERE internal_name LIKE ?
         OR result LIKE ?
         OR NAME LIKE ?
-        UNION ALL
+        UNION
         SELECT name, length(name) as len
         FROM reagents
         WHERE name LIKE ?

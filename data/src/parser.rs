@@ -7,7 +7,8 @@ use std::fs;
 #[grammar = "DM.pest"]
 pub struct DMParser;
 
-//will return data structure containing all of the Compounds
+// will return data structure containing all of the Compounds
+/*  Do not directly use parsed Reactions, as all Reagents are listed as an ingredient by default. Reagents are mapped as a Compound/Base in sql::add_reactions */
 pub fn parse(path: String) -> Vec<Reaction> {
     let unparsed_file = fs::read_to_string(path).expect("cannot read file");
 
