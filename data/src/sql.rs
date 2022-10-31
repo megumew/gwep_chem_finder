@@ -2,6 +2,7 @@ use crate::chemicals::{Chemical, Reaction, Reagent, Recipe, BASES};
 use async_recursion::async_recursion;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
 use sqlx::ConnectOptions;
+use std::collections::HashMap;
 use std::str::FromStr;
 
 #[tokio::main]
@@ -138,17 +139,16 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
         .connect()
         .await?;
 
-    let mut reaction_list: Vec<String> = Vec::new();
+    let mut reaction_list: HashMap<String,String> = HashMap::new();
 
     let mut first_counter: i32 = 0;
     for index in 0..reactions.len() {
         let reaction = reactions[index].clone();
         let internal_name = reaction.get_internal_name();
-        reaction_list.push(internal_name.clone());
         let mut name = reaction.get_name().to_lowercase();
         name = name.replace("-", " ");
         let result = reaction.get_result();
-        
+        reaction_list.insert(result.clone(), internal_name.clone());
         let mix_phrase = reaction.get_mix_phrase();
         let instant = reaction.is_instant();
         let hidden = reaction.is_hidden();
@@ -230,12 +230,26 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
                     )
                     .execute(&mut conn)
                     .await?;
-                } else if reaction_list.contains(&name) {
+                } else if reaction_list.clone().into_values().collect::<Vec<String>>().contains(&name) {
                     sqlx::query!(
                         r#"UPDATE reagents
                         SET ingredient_type = 'compound'
                         WHERE name LIKE ? AND recipe = ?
                         "#,
+                        name,
+                        second_counter
+                    )
+                    .execute(&mut conn)
+                    .await?;
+                } else if reaction_list.contains_key(&name) {
+                    let new_name = reaction_list.get(&name).unwrap();
+                    sqlx::query!(
+                        r#"UPDATE reagents
+                        SET ingredient_type = 'compound', 
+                        name = ?
+                        WHERE name LIKE ? AND recipe = ?
+                        "#,
+                        new_name,
                         name,
                         second_counter
                     )

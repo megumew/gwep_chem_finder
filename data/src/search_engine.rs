@@ -5,7 +5,7 @@ use sqlx::{
 use std::{io, str::FromStr};
 
 #[tokio::main]
-pub async fn reagent_uses(mut reagent: String) -> Result<Vec<String>, sqlx::Error> {
+pub async fn reagent_uses(reagent: String) -> Result<Vec<String>, sqlx::Error> {
     let mut strings: Vec<String> = Vec::new();
 
     dotenvy::dotenv().ok();
@@ -16,24 +16,6 @@ pub async fn reagent_uses(mut reagent: String) -> Result<Vec<String>, sqlx::Erro
         .journal_mode(SqliteJournalMode::Wal)
         .connect()
         .await?;
-
-    /* Finds the key to lookup a reagent's use even if the reagent is a Compound and reagent.name != reaction.internal_name, but rather reagent.name == reaction.result */
-    let proper_reagent_name = sqlx::query!(
-        r#"
-        SELECT result
-        FROM reactions
-        WHERE internal_name LIKE ?
-        OR result LIKE ?;
-        "#,
-        reagent,
-        reagent
-    )
-    .fetch_optional(&mut conn)
-    .await?;
-    
-    if let Some(r#name) = proper_reagent_name {
-        reagent = name.result
-    }
 
     let search = sqlx::query!(
         r#"
@@ -71,9 +53,6 @@ pub async fn reaction_search(input: &String) -> Result<Vec<String>, sqlx::Error>
     let mut strings: Vec<String> = Vec::new();
 
     let mut clean = input.to_string();
-    if input.len() > 20 {
-        clean.truncate(20)
-    }
     clean = clean.replace(" ", "_");
     clean = clean.replace("-", "_");
 
@@ -82,17 +61,21 @@ pub async fn reaction_search(input: &String) -> Result<Vec<String>, sqlx::Error>
         Err(_) => {}
     }
 
+    if input.len() > 10 {
+        clean.truncate(10)
+    }
+
     strings = search_reaction_starts_with(&clean, strings).await?;
     strings = search_reaction_multi_starts_with(&clean, strings).await?;
 
-    if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec());
+    if strings.len() > 3 {
+        return Ok(strings[0..3].to_vec());
     }
 
     strings = search_reaction_contains(&clean, strings).await?;
 
-    if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec());
+    if strings.len() > 4 {
+        return Ok(strings[0..4].to_vec());
     }
 
     strings = search_typos(&clean, strings, true).await?;
@@ -413,9 +396,6 @@ pub async fn reagent_search(input: &String) -> Result<Vec<String>, sqlx::Error> 
     let mut strings: Vec<String> = Vec::new();
 
     let mut clean = input.to_string();
-    if input.len() > 20 {
-        clean.truncate(20)
-    }
     clean = clean.replace(" ", "_");
     clean = clean.replace("-", "_");
 
@@ -423,18 +403,21 @@ pub async fn reagent_search(input: &String) -> Result<Vec<String>, sqlx::Error> 
         Ok(string) => return Ok(vec![string]),
         Err(_) => {}
     }
+    if input.len() > 10 {
+        clean.truncate(10)
+    }
 
     strings = search_reagent_starts_with(&clean, strings).await?;
     strings = search_reagent_multi_starts_with(&clean, strings).await?;
 
-    if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec());
+    if strings.len() > 3 {
+        return Ok(strings[0..3].to_vec());
     }
 
     strings = search_reagent_contains(&clean, strings).await?;
 
-    if strings.len() > 5 {
-        return Ok(strings[0..5].to_vec());
+    if strings.len() > 4 {
+        return Ok(strings[0..4].to_vec());
     }
 
     strings = search_typos(&clean, strings, false).await?;
@@ -478,8 +461,6 @@ async fn search_reagent_perfect_match(input: &String) -> Result<String, sqlx::Er
     )
     .fetch_optional(&mut conn)
     .await?;
-
-    println!("{:?}", perfect_match);
 
     if let Some(r#match) = perfect_match {
         return Ok(r#match.name.unwrap())
