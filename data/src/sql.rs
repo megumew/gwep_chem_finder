@@ -39,16 +39,30 @@ pub async fn get_all_reactions() -> Result<Vec<Reaction>, sqlx::Error> {
 }
 
 #[async_recursion(?Send)]
-async fn get_reaction(internal_name: String) -> Result<Reaction, sqlx::Error> {
+async fn get_reaction(key: String) -> Result<Reaction, sqlx::Error> {
     dotenvy::dotenv().ok();
 
-    //std::env::set_var("DATABASE_URL", "sqlite://data/data.db");
     let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
 
     let mut conn = SqliteConnectOptions::from_str(env)?
         .journal_mode(SqliteJournalMode::Wal)
         .connect()
         .await?;
+
+    let internal_name = sqlx::query!(
+        r#"
+        SELECT *
+        FROM reactions
+        WHERE internal_name = ?
+        OR name = ?
+        OR result = ?;
+        "#,
+        key,
+        key,
+        key
+    )
+    .fetch_one(&mut conn)
+    .await?.internal_name.unwrap();
 
     let recipes = sqlx::query!(
         r#"
@@ -110,9 +124,9 @@ async fn get_reaction(internal_name: String) -> Result<Reaction, sqlx::Error> {
     }
 
     let reaction = Reaction::new(
-        reaction_query.internal_name.unwrap(),
-        reaction_query.name,
-        reaction_query.result,
+        reaction_query.internal_name.unwrap().to_lowercase(),
+        reaction_query.name.to_lowercase(),
+        reaction_query.result.unwrap().to_lowercase(),
         recipe_list,
         reaction_query.mix_phrase,
         required_temp,
@@ -143,10 +157,10 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
     let mut first_counter: i32 = 0;
     for index in 0..reactions.len() {
         let reaction = reactions[index].clone();
-        let internal_name = reaction.get_internal_name();
+        let internal_name = reaction.get_internal_name().to_lowercase();
         let mut name = reaction.get_name().to_lowercase();
         name = name.replace("-", " ");
-        let result = reaction.get_result();
+        let result = reaction.get_result().to_lowercase();
         reaction_list.insert(result.clone(), internal_name.clone());
         let mix_phrase = reaction.get_mix_phrase();
         let instant = reaction.is_instant();
@@ -241,14 +255,11 @@ pub async fn add_reaction(reactions: Vec<Reaction>) -> Result<(), sqlx::Error> {
                     .execute(&mut conn)
                     .await?;
                 } else if reaction_list.contains_key(&name) {
-                    let new_name = reaction_list.get(&name).unwrap();
                     sqlx::query!(
                         r#"UPDATE reagents
-                        SET ingredient_type = 'compound', 
-                        name = ?
+                        SET ingredient_type = 'compound'
                         WHERE name LIKE ? AND recipe = ?
                         "#,
-                        new_name,
                         name,
                         second_counter
                     )
@@ -296,7 +307,7 @@ pub async fn database() -> Result<(), sqlx::Error> {
         "CREATE TABLE IF NOT EXISTS reactions (
                 internal_name TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
-                result TEXT NOT NULL,
+                result TEXT,
                 mix_phrase TEXT NOT NULL,
                 required_temp FLOAT,
                 instant BOOLEAN NOT NULL,

@@ -5,7 +5,7 @@ use sqlx::{
 use std::{io, str::FromStr};
 
 #[tokio::main]
-pub async fn reagent_uses(reagent: String) -> Result<Vec<String>, sqlx::Error> {
+pub async fn reagent_uses(mut reagent: String) -> Result<Vec<String>, sqlx::Error> {
     let mut strings: Vec<String> = Vec::new();
 
     dotenvy::dotenv().ok();
@@ -16,6 +16,25 @@ pub async fn reagent_uses(reagent: String) -> Result<Vec<String>, sqlx::Error> {
         .journal_mode(SqliteJournalMode::Wal)
         .connect()
         .await?;
+    
+    let proper_name = sqlx::query!(
+        r#"
+        SELECT result
+        FROM reactions
+        WHERE internal_name = ?
+        OR name = ?
+        OR result = ?;
+        "#,
+        reagent,
+        reagent,
+        reagent
+    )
+    .fetch_optional(&mut conn)
+    .await?;
+
+    if let Some(result) = proper_name {
+        reagent = result.result.unwrap()
+    }
 
     let search = sqlx::query!(
         r#"
@@ -56,9 +75,10 @@ pub async fn reaction_search(input: &String) -> Result<Vec<String>, sqlx::Error>
     clean = clean.replace(" ", "_");
     clean = clean.replace("-", "_");
 
-    match search_reaction_perfect_match(&clean).await {
-        Ok(string) => return Ok(vec![string]),
-        Err(_) => {}
+    let perfect_match = search_reaction_perfect_match(&clean).await?;
+    match perfect_match.len() {
+        0 => {}
+       _ => return Ok(perfect_match)
     }
 
     if input.len() > 10 {
@@ -89,7 +109,7 @@ pub async fn reaction_search(input: &String) -> Result<Vec<String>, sqlx::Error>
     Err(sqlx::Error::RowNotFound)
 }
 
-async fn search_reaction_perfect_match(input: &String) -> Result<String, sqlx::Error> {
+async fn search_reaction_perfect_match(input: &String) -> Result<Vec<String>, sqlx::Error> {
     dotenvy::dotenv().ok();
 
     let env = &std::env::var("GWEP_DATABASE_URL").ok().unwrap();
@@ -98,6 +118,8 @@ async fn search_reaction_perfect_match(input: &String) -> Result<String, sqlx::E
         .journal_mode(SqliteJournalMode::Wal)
         .connect()
         .await?;
+    
+    let mut vec: Vec<String> = Vec::new();
 
     let perfect_match = sqlx::query!(
         r#"
@@ -112,14 +134,14 @@ async fn search_reaction_perfect_match(input: &String) -> Result<String, sqlx::E
         input,
         input
     )
-    .fetch_optional(&mut conn)
+    .fetch_all(&mut conn)
     .await?;
 
-    if let Some(r#match) = perfect_match {
-        return Ok(r#match.internal_name.unwrap())
-    };
+    for pmatch in perfect_match {
+        vec.push(pmatch.internal_name.unwrap())
+    }
 
-    return Err(sqlx::Error::RowNotFound)
+    return Ok(vec)
 }
 
 async fn search_reaction_starts_with(
@@ -368,11 +390,10 @@ async fn search_reagent_perfect_match(input: &String) -> Result<String, sqlx::Er
     .fetch_optional(&mut conn)
     .await?;
 
-    if let Some(r#match) = perfect_match {
-        return Ok(r#match.name.unwrap())
-    };
-
-    return Err(sqlx::Error::RowNotFound)
+    match perfect_match {
+        Some(m) => return Ok(m.name.unwrap()),
+        None => return Err(sqlx::Error::RowNotFound)
+    }
 }
 
 async fn search_reagent_starts_with(
